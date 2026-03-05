@@ -27,6 +27,9 @@ body {
 }
 
 .home a {
+    display: flex;
+    align-items: center;
+    gap: 5px;
     font-size: 1.8rem;
     font-weight: bold;
     color: #ffffff;
@@ -89,4 +92,14 @@ footer p {
     background-color: #262626;
     width: 100%;
     padding: 15px;
+}
+
+.sticky {
+    position: sticky;
+    top: 0;
+}
+
+h1 {
+    color: white;
+    text-align: center;
 }
