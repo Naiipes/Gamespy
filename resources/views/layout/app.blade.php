@@ -13,20 +13,20 @@
     <header class="sticky">
         <nav>
             <ul class="header">
-                <li class="home"><a href="">Gamespy
+                <li class="home"><a href="{{ route('home') }}">Gamespy
                     <x-spy-icon class="spy-icon"/>
                 </a>
                 </li>
                 <li class="search-item">
-                    <form>
-                        <input class="search-input" type="search" placeholder="Search game">
+                    <form action="{{ route('search') }}" method="GET">
+                        <input class="search-input" type="search" name="q" placeholder="Search game">
                         <button class="search-btn" type="submit"><x-search-icon/></button>
                     </form>
                 </li>
-                <li><a href="">Deals</a></li>
-                <li><a href="">Free</a></li>
-                <li><a href="">Categories</a></li>
-                <li class="login"><a href=""><x-user-icon/></a></li>
+                <li><a href="{{ route('trending') }}">Trending</a></li>
+                <li><a href="{{ route('genres')}}">Genres</a></li>
+                <li><a href="">Wishlist</a></li>
+                <li class="login"><a href="{{ route('login') }}"><x-user-icon/></a></li>
             </ul>
         </nav>
     </header>

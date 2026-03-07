@@ -1,30 +1,12 @@
-<input type="text" id="search">
+@extends('layout.app')
 
-<div id="results"></div>
-
-<script>
-document.getElementById("search").addEventListener("input", async function(){
-
-let q=this.value;
-
-if(q.length<3) return;
-
-let res=await fetch("/search?q="+q);
-
-let games=await res.json();
-
-let html="";
-
-games.forEach(g=>{
-html+=`
-<div>
-<img src="${g.thumb}" width="100">
-${g.external} - $${g.cheapest}
-</div>
-`;
-});
-
-document.getElementById("results").innerHTML=html;
-
-});
-</script>
+@section('content')
+    <div id="results">
+        @foreach ($games as $game)
+            <div>
+                <img src="{{ $game['thumb'] }}" width="300" alt="{{ $game['external'] }}">
+                {{ $game['external'] }} - ${{ $game['cheapest'] }}
+            </div>
+        @endforeach
+    </div>
+@endsection

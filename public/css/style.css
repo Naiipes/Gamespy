@@ -2,6 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    
 }
 
 body {
@@ -9,12 +10,13 @@ body {
     min-height: 200vh;
     position: relative;
     padding-bottom: 50px;
+    color: white;
+    font-family: "Inter Variable", Inter, sans-serif;
 }
 
 .header {
     background-color: #262626;
     padding: 15px 30px;
-    font-family: "Arial", sans-serif;
     list-style-type: none;
     display: flex;
     align-items: center;
@@ -30,7 +32,7 @@ body {
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 1.8rem;
+    font-size: 32px;
     font-weight: bold;
     color: #ffffff;
     text-decoration: none;
@@ -42,7 +44,7 @@ li a {
     color: #a3a3a3;
     text-decoration: none;
     margin-left: 1.5rem;
-    font-size: 16px;
+    font-size: 18px;
 }
 
 li a:hover {
@@ -70,15 +72,15 @@ li a:hover {
 .search-btn {
     padding: 4px 8px;
     border: none;
-    border-radius: 0 4px 4px 0; /* Rounds the right corners only */
-    background-color: #535353; /* A pop of gaming-friendly red */
+    border-radius: 0 4px 4px 0; 
+    background-color: #535353; 
     color: #cacaca;
     cursor: pointer;
     font-weight: bold;
 }
 
 .search-btn:hover {
-    background-color: #636363; /* Darkens on hover */
+    background-color: #636363; 
 }
 
 footer p {
@@ -89,7 +91,7 @@ footer p {
     transform: translateX(-50%);
     text-align: center;
     font-size: 14px;
-    background-color: #262626;
+    background-color: #171717;
     width: 100%;
     padding: 15px;
 }

@@ -14,6 +14,11 @@ class GameSearchController extends Controller
 
         $results = $service->search($request->q);
 
+        if (!$results) // Added this to fix an error when the search query is empty, it would return null and cause an error in the view
+        {
+            return view("search", ["games" => []]);
+        }
+
         foreach ($results as $game)
         {
 
@@ -28,7 +33,7 @@ class GameSearchController extends Controller
 
         }
 
-        return response()->json($results);
+        return view("search", ["games" => $results]);
 
     }
 
