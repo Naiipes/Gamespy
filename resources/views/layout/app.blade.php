@@ -14,19 +14,28 @@
         <nav>
             <ul class="header">
                 <li class="home"><a href="{{ route('home') }}">Gamespy
-                    <x-spy-icon class="spy-icon"/>
-                </a>
+                        <x-spy-icon class="spy-icon" />
+                    </a>
                 </li>
                 <li class="search-item">
-                    <form action="{{ route('search') }}" method="GET">
+                    <form action="{{ route('search') }}" method="GET" autocomplete="off">
                         <input class="search-input" type="search" name="q" placeholder="Search game">
-                        <button class="search-btn" type="submit"><x-search-icon/></button>
+                        <button class="search-btn" type="submit"><x-search-icon /></button>
                     </form>
                 </li>
+                <li class="dropdown">
+                    <button class="dropdown-btn">Genres<span class="arrow"><x-arrow-down/></span></button>
+                    <ul class="dropdown-genres">
+                        <li><a href="">Action</a></li>
+                        <li><a href="">Adventure</a></li>
+                        <li><a href="">RPG</a></li>
+                        <li><a href="">Strategy</a></li>
+                        <li><a href="">Sports</a></li>
+                    </ul>
+                </li>
                 <li><a href="{{ route('trending') }}">Trending</a></li>
-                <li><a href="{{ route('genres')}}">Genres</a></li>
                 <li><a href="">Wishlist</a></li>
-                <li class="login"><a href="{{ route('login') }}"><x-user-icon/></a></li>
+                <li class="login"><a href="{{ route('login') }}"><x-user-icon /></a></li>
             </ul>
         </nav>
     </header>

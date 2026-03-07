@@ -43,7 +43,7 @@ body {
 li a {
     color: #a3a3a3;
     text-decoration: none;
-    margin-left: 1.5rem;
+    margin-left: 2rem;
     font-size: 18px;
 }
 
@@ -58,29 +58,30 @@ li a:hover {
 
 .search-input {
     padding: 8px 12px;
-    border: none;
+    border: 1px solid rgb(68, 129, 184);
     border-radius: 4px 0 0 4px;
-    background-color: #3a3a3a;
+    background-color: #58595b;
     color: white;
     outline: none;
+    width: 300px;
 }
 
 .search-input::placeholder {
-    color: #888;
+    color: #b5b5b5;
 }
 
 .search-btn {
     padding: 4px 8px;
     border: none;
     border-radius: 0 4px 4px 0; 
-    background-color: #535353; 
+    background-color: #4481b8; 
     color: #cacaca;
     cursor: pointer;
     font-weight: bold;
 }
 
 .search-btn:hover {
-    background-color: #636363; 
+    background-color: #3a6fa5; 
 }
 
 footer p {
@@ -104,4 +105,69 @@ footer p {
 h1 {
     color: white;
     text-align: center;
+}
+
+.dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-btn {
+    background-color: transparent;
+    color: #a3a3a3;
+    padding: 0;
+    margin-left: 1.8rem;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dropdown-btn:hover {
+    color: #ffffff;
+}
+
+.arrow {
+    transition: ease 0.3s;
+}
+
+.dropdown-genres {
+    font-family: "Inter Variable", sans-serif;
+    list-style: none;
+    position: absolute;
+    top: 100%; 
+    left: 1.8rem; 
+    background-color: #262626;
+    min-width: 160px;
+    border-radius: 6px; 
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);    
+    z-index: 10;
+    overflow: hidden;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.dropdown-genres li a {
+    margin: 0;
+    padding: 12px 20px;
+    display: block;
+    color: #a3a3a3;
+    font-size: 16px;
+}
+
+.dropdown-genres li a:hover {
+    background-color: #3f3f46;
+    color: #ffffff;
+}
+
+.dropdown:hover .dropdown-genres {
+    visibility: visible;
+}
+
+.dropdown:hover .arrow {
+    transform: rotate(180deg);
 }
