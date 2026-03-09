@@ -24,6 +24,7 @@ Route::get('/login', function () {
     return view('login');
 })->name('login');
 
+Route::get("/search",[GameSearchController::class,"search"])->name('search');
 
 /* API */
 
