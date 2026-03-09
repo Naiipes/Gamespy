@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/wishlist',[WishlistController::class,'store']);
     Route::get('/wishlist',[WishlistController::class,'index']);
+    Route::delete('/wishlist/game/{game_id}',[WishlistController::class,'deleteGame']);
 
     Route::get('/notifications', function () {
         return view('notifications');
