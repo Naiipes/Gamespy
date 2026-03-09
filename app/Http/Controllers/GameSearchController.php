@@ -15,10 +15,15 @@ class GameSearchController extends Controller
         $query = $request->q;
 
         if(!$query){
-            return response()->json([]);
+            if ($request->wantsJson()) {
+                return response()->json([]);
+            }
+            return view('search', ['games' => []]);
         }
 
         $results = $service->search($query);
+
+        dd($results); // デバッグ: APIのレスポンスを確認
 
         $games = [];
 
@@ -38,17 +43,20 @@ class GameSearchController extends Controller
 
         }
 
-        return response()->json(
-            collect($games)->map(function($game){
-                 return [
-                "id"=>$game->id,
-                "title"=>$game->title,
-                "thumb"=>$game->thumb,
-                "price"=>$game->cheapest_price
-                ];
-        })
-        );
+        if ($request->wantsJson()) {
+            return response()->json(
+                collect($games)->map(function($game){
+                     return [
+                    "id"=>$game->id,
+                    "title"=>$game->title,
+                    "thumb"=>$game->thumb,
+                    "price"=>$game->cheapest_price
+                    ];
+            })
+            );
+        }
 
+        return view('search', compact('games'));
     }
 
 }
