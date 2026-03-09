@@ -17,7 +17,20 @@ class WishlistController extends Controller
             "target_price"=>$request->target_price
         ]);
 
-        return back();
+        return response()->json([
+            "message"=>"added"
+        ]);
+
+    }
+
+    public function index()
+    {
+
+        return auth()
+            ->user()
+            ->wishlists()
+            ->with("game")
+            ->get();
 
     }
 

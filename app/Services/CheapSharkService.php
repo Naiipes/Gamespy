@@ -22,4 +22,18 @@ class CheapSharkService
 
     }
 
+    public function deals($gameId)
+    {
+
+        $response = Http::get(
+            "https://www.cheapshark.com/api/1.0/games",
+            [
+                "id"=>$gameId
+            ]
+        );
+
+    return $response->json();
+
+    }
+
 }
