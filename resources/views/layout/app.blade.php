@@ -35,7 +35,14 @@
                 </li>
                 <li><a href="{{ route('trending') }}">Trending</a></li>
                 <li><a href="">Wishlist</a></li>
-                <li class="login"><a href="{{ route('login') }}"><x-user-icon /></a></li>
+                @auth
+                    <li><form action="{{ route('logout') }}" method="POST" style="display: inline;">
+                        @csrf
+                        <button type="submit" style="background: none; border: none; color: #a3a3a3; cursor: pointer;">Logout</button>
+                    </form></li>
+                @else
+                    <li class="login"><a href="{{ route('login') }}"><x-user-icon /></a></li>
+                @endauth
             </ul>
         </nav>
     </header>

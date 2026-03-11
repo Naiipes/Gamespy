@@ -2,7 +2,6 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    
 }
 
 body {
@@ -22,7 +21,6 @@ body {
     align-items: center;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
-
 
 .home {
     margin-right: auto;
@@ -73,15 +71,15 @@ li a:hover {
 .search-btn {
     padding: 4px 8px;
     border: none;
-    border-radius: 0 4px 4px 0; 
-    background-color: #4481b8; 
+    border-radius: 0 4px 4px 0;
+    background-color: #4481b8;
     color: #cacaca;
     cursor: pointer;
     font-weight: bold;
 }
 
 .search-btn:hover {
-    background-color: #3a6fa5; 
+    background-color: #3a6fa5;
 }
 
 footer p {
@@ -138,12 +136,12 @@ h1 {
     font-family: "Inter Variable", sans-serif;
     list-style: none;
     position: absolute;
-    top: 100%; 
-    left: 1.8rem; 
+    top: 100%;
+    left: 1.8rem;
     background-color: #262626;
     min-width: 160px;
-    border-radius: 6px; 
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);    
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     z-index: 10;
     overflow: hidden;
     visibility: hidden;
@@ -171,3 +169,106 @@ h1 {
 .dropdown:hover .arrow {
     transform: rotate(180deg);
 }
+
+/* Login and Register Styles by Satoi*/
+
+/*----------------------------------------------------*/
+
+.login-container,
+.register-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #262626;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.login-container h1,
+.register-container h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #a3a3a3;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #58595b;
+    border-radius: 4px;
+    background-color: #58595b;
+    color: white;
+    outline: none;
+}
+
+.form-group input:focus {
+    border-color: #4481b8;
+}
+
+.login-btn,
+.register-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #4481b8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.login-btn:hover,
+.register-btn:hover {
+    background-color: #3a6fa5;
+}
+
+.login-container p,
+.register-container p {
+    text-align: center;
+    margin-top: 20px;
+    color: #a3a3a3;
+}
+
+.login-container p a,
+.register-container p a {
+    color: #4481b8;
+    text-decoration: none;
+}
+
+.login-container p a:hover,
+.register-container p a:hover {
+    text-decoration: underline;
+}
+
+.error {
+    background-color: #ffdddd;
+    color: #d8000c;
+    padding: 10px;
+    border: 1px solid #d8000c;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.error ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.error li {
+    margin-bottom: 5px;
+}
+
+/*----------------------------------------------------*/
+
+/* End of Login and Register Styles */
