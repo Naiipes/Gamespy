@@ -2,6 +2,11 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\GameSearchController;
+use App\Http\Controllers\GameDiscoveryController;
+use App\Http\Controllers\GameDealController;
+use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\NotificationController;
 
 
 Route::get('/', function () {
