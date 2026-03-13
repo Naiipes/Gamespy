@@ -33,7 +33,6 @@
                         <li><a href="">Sports</a></li>
                     </ul>
                 </li>
-                <li><a href="{{ route('trending') }}">Trending</a></li>
                 <li><a href="">Wishlist</a></li>
                 @auth
                     <li><form action="{{ route('logout') }}" method="POST" style="display: inline;">
