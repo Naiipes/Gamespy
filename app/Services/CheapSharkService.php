@@ -14,7 +14,7 @@ class CheapSharkService
             "https://www.cheapshark.com/api/1.0/games",
             [
                 "title"=>$query,
-                "limit"=>10
+                "limit"=>20
             ]
         );
 
