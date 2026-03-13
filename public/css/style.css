@@ -6,7 +6,7 @@
 
 body {
     background-color: #171717;
-    min-height: 200vh;
+    min-height: 100vh;
     position: relative;
     padding-bottom: 50px;
     color: white;
@@ -272,3 +272,148 @@ h1 {
 /*----------------------------------------------------*/
 
 /* End of Login and Register Styles */
+
+/* Carousel Start */
+
+.carousel-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 1200px; /* Limits how wide the carousel gets */
+    margin: 40px auto; /* Centers it and adds space below your header */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+}
+
+.carousel-container {
+    width: 100%;
+    overflow: hidden;
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.4s ease-in-out;
+    transform: translateX(calc(-100% / 3)); 
+}
+
+.carousel-slide {
+    min-width: 60%; 
+    margin: 0 10px; 
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    opacity: 0.5; 
+    transition: opacity 0.3s ease;
+}
+
+.carousel-slide.current-slide {
+    opacity: 1; 
+}
+
+.carousel-slide img {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    display: block;
+}
+
+.slide-overlay {
+    position: absolute;
+    bottom: 10%;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    color: #fff;
+}
+
+.overlay-content {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 20px 40px;
+    border-radius: 8px;
+}
+
+/* Scoped specifically to the carousel to avoid altering your other headers */
+.carousel-wrapper .overlay-content h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+    color: #ffffff; 
+}
+
+.carousel-wrapper .overlay-content h2 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #ffffff; 
+}
+
+.view-deal-btn {
+    background-color: #e5e5e5;
+    color: #000;
+    border: none;
+    padding: 10px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-family: inherit; /* Inherits your 'Inter Variable' font */
+}
+
+.view-deal-btn:hover {
+    background-color: #fff;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 5; /* Kept low so it doesn't overlap your dropdown menu */
+    padding: 10px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.carousel-btn:hover {
+    opacity: 1;
+}
+
+.prev-btn {
+    left: 15%;
+}
+
+.next-btn {
+    right: 15%;
+}
+
+.carousel-nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.nav-dot {
+    width: 25px;
+    height: 4px; 
+    background-color: rgba(255, 255, 255, 0.3);
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.nav-dot.active {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Carousel End */

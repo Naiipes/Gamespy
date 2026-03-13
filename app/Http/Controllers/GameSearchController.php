@@ -23,7 +23,7 @@ class GameSearchController extends Controller
 
         $results = $service->search($query);
 
-        dd($results); // デバッグ: APIのレスポンスを確認
+        dd($results); 
 
         $games = [];
 
