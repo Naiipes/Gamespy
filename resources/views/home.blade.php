@@ -3,11 +3,8 @@
 @section('content')
     <div class="carousel-wrapper">
         <h1>Trending</h1>
-        <p class="carousel-current-title" id="currentSlideTitle">
-            {{ $popularGames[0]['title'] ?? 'Unknown title' }}
-        </p>
+    
         <button class="carousel-btn prev-btn" id="prevBtn">&#10094;</button>
-
         <div class="carousel-container" id="carouselContainer">
             <div class="carousel-track" id="carouselTrack">
 
@@ -36,12 +33,6 @@
 
                     <div class="carousel-slide {{ $index === 0 ? 'current-slide' : '' }}"
                         data-title="{{ $game['title'] ?? 'Unknown title' }}">
-                        @if (!empty($game['storeID']))
-                            <div class="store-badge" title="{{ $storeName }}">
-                                <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
-                                    alt="{{ $storeName }}" onerror="this.parentElement.style.display='none'">
-                            </div>
-                        @endif
 
                         <img
                         src="https://cdn.akamai.steamstatic.com/steam/apps/{{ $game['steamAppID'] }}/capsule_616x353.jpg"
@@ -55,26 +46,28 @@
                             }"
                         alt="{{ $game['title'] }}">
 
+                        <div class="slide-title">{{ $game['title'] }}</div>
+
                         <div class="slide-info-bar">
-                                <div class="slide-pricing">
-                                    @php
-                                        $savings = round(floatval($game['savings'] ?? 0));
-                                    @endphp
-                                    <span class="discount-badge">-{{ $savings }}%</span>
-    
-                                    <span class="original-price">${{ $game['normalPrice'] }}</span>
-                                    <span class="sale-price">${{ $game['salePrice'] }}</span>
-                                </div>
-                                <a href="https://www.cheapshark.com/redirect?dealID={{ $game['dealID'] }}" target="_blank"
-                                    class="store-btn" title="View Deal"><x-view /> {{ $storeName }}
-                                </a>
+                            <div class="slide-pricing">
+                                <span class="discount-badge">-{{ $savings }}%</span>
+                                <span class="original-price">${{ $game['normalPrice'] }}</span>
+                                <span class="sale-price">${{ $game['salePrice'] }}</span>
+                            </div>
+                            <a href="https://www.cheapshark.com/redirect?dealID={{ $game['dealID'] }}" target="_blank"
+                                class="store-btn" title="View Deal">
+                                @if (!empty($game['storeID']))
+                                    <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
+                                        alt="{{ $storeName }}" style="height: 20px; width: auto;" onerror="this.style.display='none'">
+                                @endif
+                                {{ $storeName }}
+                            </a>
                         </div>
                     </div>
                 @endforeach
 
             </div>
         </div>
-
         <button class="carousel-btn next-btn" id="nextBtn">&#10095;</button>
 
         <div class="carousel-nav">
