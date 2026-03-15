@@ -3,6 +3,9 @@
 @section('content')
     <div class="carousel-wrapper">
         <h1>Trending</h1>
+        <p class="carousel-current-title" id="currentSlideTitle">
+            {{ $popularGames[0]['title'] ?? 'Unknown title' }}
+        </p>
         <button class="carousel-btn prev-btn" id="prevBtn">&#10094;</button>
 
         <div class="carousel-container" id="carouselContainer">
@@ -31,7 +34,15 @@
                         $storeName = $stores[$game['storeID'] ?? ''] ?? 'View Deal';
                     @endphp
 
-                    <div class="carousel-slide {{ $index === 0 ? 'current-slide' : '' }}">
+                    <div class="carousel-slide {{ $index === 0 ? 'current-slide' : '' }}"
+                        data-title="{{ $game['title'] ?? 'Unknown title' }}">
+                        @if (!empty($game['storeID']))
+                            <div class="store-badge" title="{{ $storeName }}">
+                                <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
+                                    alt="{{ $storeName }}" onerror="this.parentElement.style.display='none'">
+                            </div>
+                        @endif
+
                         <img
                         src="https://cdn.akamai.steamstatic.com/steam/apps/{{ $game['steamAppID'] }}/capsule_616x353.jpg"
                         onerror="
@@ -43,8 +54,6 @@
                                 this.src='{{ $game['thumb'] }}';
                             }"
                         alt="{{ $game['title'] }}">
-
-                        <div class="slide-title">{{ $game['title'] }}</div>
 
                         <div class="slide-info-bar">
                                 <div class="slide-pricing">
