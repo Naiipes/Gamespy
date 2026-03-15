@@ -288,7 +288,7 @@ h1 {
 .carousel-wrapper h1 {
     margin-bottom: 10px;
     color: white;
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: bold;
 }
 
@@ -343,30 +343,11 @@ h1 {
     display: block;
 }
 
-.slide-overlay {
-    position: absolute;
-    bottom: 16px;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    padding-right: 16px;
-    text-align: right;
-    color: white;
-}
-
 .carousel-wrapper .overlay-content h3 {
     font-size: 1.2rem;
     font-weight: 600;
     margin-bottom: 5px;
     letter-spacing: 1px;
-    color: #ffffff;
-}
-
-.carousel-wrapper .overlay-content h2 {
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin-bottom: 15px;
     color: #ffffff;
 }
 
