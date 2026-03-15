@@ -31,7 +31,7 @@
                         <li><a href="">RPG</a></li>
                         <li><a href="">Strategy</a></li>
                         <li><a href="">Sports</a></li>
-                        <li><a href="">simulation</a></li>
+                        <li><a href="">Simulation</a></li>
                         <li><a href="">Racing</a></li>
                         <li><a href="">Indie</a></li>
                         <li><a href="">Casual</a></li>
