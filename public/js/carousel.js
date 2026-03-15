@@ -1,50 +1,68 @@
-const carouselTrack = document.getElementById("carouselTrack");
-const slides = Array.from(carouselTrack.children);
-const nextBtn = document.getElementById("nextBtn");
-const prevBtn = document.getElementById("prevBtn");
-const navDots = Array.from(document.querySelectorAll(".nav-dot"));
-const currentSlideTitle = document.getElementById("currentSlideTitle");
+function initCarousel() {
+    const carouselTrack = document.getElementById("carouselTrack");
+    const nextBtn = document.getElementById("nextBtn");
+    const prevBtn = document.getElementById("prevBtn");
+    const currentSlideTitle = document.getElementById("currentSlideTitle");
+    const navDots = Array.from(document.querySelectorAll(".nav-dot"));
 
-let currentSlideIndex = 0; // We can start at 0 again since there are no "peeking" edge images
+    if (!carouselTrack) {
+        return;
+    }
 
-function updateCarousel() {
-    // 1. Update active slide (CSS handles the fade/swap)
-    slides.forEach((slide, index) => {
-        slide.classList.toggle("current-slide", index === currentSlideIndex);
-    });
+    const slides = Array.from(carouselTrack.children);
+    if (slides.length === 0) {
+        return;
+    }
 
-    // 2. Update active nav dot
-    if (navDots.length > 0) {
-        navDots.forEach((dot, index) => {
-            dot.classList.toggle("active", index === currentSlideIndex);
+    let currentSlideIndex = 0;
+
+    function updateCarousel() {
+        slides.forEach((slide, index) => {
+            slide.classList.toggle(
+                "current-slide",
+                index === currentSlideIndex,
+            );
+        });
+
+        if (navDots.length > 0) {
+            navDots.forEach((dot, index) => {
+                dot.classList.toggle("active", index === currentSlideIndex);
+            });
+        }
+
+        if (currentSlideTitle && slides[currentSlideIndex]) {
+            currentSlideTitle.textContent =
+                slides[currentSlideIndex].dataset.title || "Unknown title";
+        }
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+            currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+            updateCarousel();
         });
     }
 
-    if (currentSlideTitle && slides[currentSlideIndex]) {
-        currentSlideTitle.textContent =
-            slides[currentSlideIndex].dataset.title || "Unknown title";
+    if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+            currentSlideIndex =
+                (currentSlideIndex - 1 + slides.length) % slides.length;
+            updateCarousel();
+        });
     }
+
+    navDots.forEach((dot, index) => {
+        dot.addEventListener("click", () => {
+            currentSlideIndex = index;
+            updateCarousel();
+        });
+    });
+
+    updateCarousel();
 }
 
-// Next Button Click - Loops to beginning
-nextBtn.addEventListener("click", () => {
-    currentSlideIndex = (currentSlideIndex + 1) % slides.length;
-    updateCarousel();
-});
-
-// Prev Button Click - Loops to end
-prevBtn.addEventListener("click", () => {
-    currentSlideIndex = (currentSlideIndex - 1 + slides.length) % slides.length;
-    updateCarousel();
-});
-
-// Dot Navigation
-navDots.forEach((dot, index) => {
-    dot.addEventListener("click", () => {
-        currentSlideIndex = index;
-        updateCarousel();
-    });
-});
-
-// Initialize
-updateCarousel();
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCarousel);
+} else {
+    initCarousel();
+}

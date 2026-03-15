@@ -45,5 +45,5 @@
         </div>
     </div>
 
-    <script src="{{ asset('js/carousel.js') }}"></script>
+    <script src="{{ asset('js/carousel.js?v=') . time() }}"></script>
 @endsection
