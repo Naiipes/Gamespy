@@ -3,6 +3,7 @@ const slides = Array.from(carouselTrack.children);
 const nextBtn = document.getElementById("nextBtn");
 const prevBtn = document.getElementById("prevBtn");
 const navDots = Array.from(document.querySelectorAll(".nav-dot"));
+const currentSlideTitle = document.getElementById("currentSlideTitle");
 
 let currentSlideIndex = 0; // We can start at 0 again since there are no "peeking" edge images
 
@@ -17,6 +18,11 @@ function updateCarousel() {
         navDots.forEach((dot, index) => {
             dot.classList.toggle("active", index === currentSlideIndex);
         });
+    }
+
+    if (currentSlideTitle && slides[currentSlideIndex]) {
+        currentSlideTitle.textContent =
+            slides[currentSlideIndex].dataset.title || "Unknown title";
     }
 }
 
