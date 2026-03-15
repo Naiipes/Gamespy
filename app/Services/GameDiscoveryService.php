@@ -10,6 +10,15 @@ class GameDiscoveryService
 {
     private ?Collection $cachedDeals = null;
 
+    private function uniqueDealKey(array $deal): ?string
+    {
+        return $deal['steamAppID']
+            ?? $deal['gameID']
+            ?? $deal['title']
+            ?? $deal['gameName']
+            ?? null;
+    }
+
     public function recommend(int $size = 60): Collection
     {
         if ($this->cachedDeals !== null) {
@@ -30,7 +39,11 @@ class GameDiscoveryService
                 break;
             }
 
-            $unique = $unique->merge($deals)->unique('gameName')->values();
+            $unique = $unique
+                ->merge($deals)
+                ->filter(fn ($deal) => !empty($deal['steamAppID']))
+                ->unique(fn ($deal) => $this->uniqueDealKey($deal))
+                ->values();
 
             $page++;
 

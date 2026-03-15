@@ -8,35 +8,24 @@ use App\Http\Controllers\GameDiscoveryController;
 use App\Http\Controllers\GameDealController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\NotificationController;
+use App\Services\GameDiscoveryService;
 use Illuminate\Support\Facades\Route;
 
 // Temp route to build cache
-Route::get('/dev/build-cache', function() {
+Route::get('/dev/build-cache', function (GameDiscoveryService $service) {
     set_time_limit(300);
 
-    $deals = \Illuminate\Support\Facades\Http::get('https://www.cheapshark.com/api/1.0/deals', [
-        'sortBy'     => 'DealRating',
-        'pageSize'   => 60, 
-        'pageNumber' => 0,
-    ])->json();
+    $service->buildDailyCache();
 
-    $deals = collect($deals)
-        ->unique('title')          
-        ->filter(fn($d) => !empty($d['steamAppID'])) 
-        // only keep games with Steam images to show on Carousel (otherwise it looks bad)
-        ->take(20)                                
-        ->values()
-        ->toArray();
-    \Illuminate\Support\Facades\DB::table('game_recommendations')->updateOrInsert(
-        ['type' => 'recommend'],
-        [
-            'payload'    => json_encode(array_values($deals)),
-            'updated_at' => now(),
-            'created_at' => now(),
-        ]
-    );
+    $counts = \Illuminate\Support\Facades\DB::table('game_recommendations')
+        ->get(['type', 'payload'])
+        ->mapWithKeys(fn ($row) => [$row->type => count(json_decode($row->payload, true) ?: [])])
+        ->all();
 
-    return 'Saved ' . count($deals) . ' games';
+    return response()->json([
+        'message' => 'Game discovery cache rebuilt.',
+        'counts' => $counts,
+    ]);
 });
 
 
