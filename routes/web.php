@@ -7,6 +7,7 @@ use App\Http\Controllers\GameDiscoveryController;
 use App\Http\Controllers\GameDealController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\NotificationController;
+use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', function () {
@@ -39,8 +40,6 @@ Route::get("/api/search",[GameSearchController::class,"search"]);
 Route::get("/api/game/{id}/deals",[GameDealController::class,"show"]);
 
 
-/* Auth routes */
-
 Route::middleware('auth')->group(function () {
 
     Route::post('/wishlist',[WishlistController::class,'store']);
@@ -53,4 +52,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/api/notifications',[NotificationController::class,'index']);
 
-});
+}); 
+
+
+Route::get('/games/popular', [GameDiscoveryController::class, 'popular']);
+Route::get('/games/discounts', [GameDiscoveryController::class, 'discounts']);
+Route::get('/games/free', [GameDiscoveryController::class, 'free']);
+Route::get('/games/genre/{genre}', [GameDiscoveryController::class, 'genre']);
+Route::get('/games/aaa', [GameDiscoveryController::class, 'aaa']);
+Route::get('/games/recommend', [GameDiscoveryController::class, 'recommend']);
