@@ -8,36 +8,19 @@
         <div class="carousel-container" id="carouselContainer">
             <div class="carousel-track" id="carouselTrack">
 
-                <div class="carousel-slide">
-                    <img src="https://i.ytimg.com/vi/T54OWinnymM/maxresdefault.jpg" alt="">
-                    <div class="slide-overlay">
-                        <button class="view-deal-btn">View Deal</button>
+                @foreach ($popularGames as $index => $game)
+                    <div class="carousel-slide {{ $index === 0 ? 'current-slide' : '' }}">
+                        <img src="https://cdn.akamai.steamstatic.com/steam/apps/{{ $game['steamAppID'] }}/header.jpg"
+                            onerror="this.src='{{ $game['thumb'] }}'" alt="{{ $game['title'] }}">
+                        <div class="slide-overlay">
+                            <a href="https://www.cheapshark.com/redirect?dealID={{ $game['dealID'] }}" target="_blank">
+                                <button class="view-deal-btn">
+                                    VIEW DEAL | ${{ $game['salePrice'] }}
+                                </button>
+                            </a>
+                        </div>
                     </div>
-                </div>
-                <div class="carousel-slide current-slide">
-                    <img src="https://cdn1.epicgames.com/b30b6d1b4dfd4dcc93b5490be5e094e5/offer/RDR2476298253_Epic_Games_Wishlist_RDR2_2560x1440_V01-2560x1440-2a9ebe1f7ee202102555be202d5632ec.jpg" alt="">
-                    <div class="slide-overlay">
-                        <button class="view-deal-btn">View Deal</button>                        
-                    </div>
-                </div>
-                <div class="carousel-slide">
-                    <img src="https://www.nintendo.com/eu/media/images/assets/nintendo_switch_games/apexlegends/16x9_ApexLegends_image1600w.jpg" alt="">
-                    <div class="slide-overlay">
-                        <button class="view-deal-btn">View Deal</button>
-                    </div>
-                </div>
-                <div class="carousel-slide">
-                    <img src="" alt="">
-                    <div class="slide-overlay">
-                        <button class="view-deal-btn">View Deal</button>
-                    </div>
-                </div>
-                <div class="carousel-slide">
-                    <img src="" alt="">
-                    <div class="slide-overlay">
-                        <button class="view-deal-btn">View Deal</button>
-                    </div>
-                </div>
+                @endforeach
 
             </div>
         </div>
@@ -45,11 +28,9 @@
         <button class="carousel-btn next-btn" id="nextBtn">&#10095;</button>
 
         <div class="carousel-nav">
-            <button class="nav-dot"></button>
-            <button class="nav-dot active"></button>
-            <button class="nav-dot"></button>
-            <button class="nav-dot"></button>
-            <button class="nav-dot"></button>
+            @foreach ($popularGames as $index => $game)
+                <button class="nav-dot {{ $index === 0 ? 'active' : '' }}"></button>
+            @endforeach
         </div>
     </div>
 

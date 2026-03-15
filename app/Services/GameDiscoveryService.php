@@ -16,27 +16,21 @@ class GameDiscoveryService
             return $this->cachedDeals->take($size)->values();
         }
 
-        $page   = 0;
+        $page = 0;
         $unique = collect();
 
         while ($unique->count() < $size) {
-            $deals = Http::get(
-                'https://www.cheapshark.com/api/1.0/deals',
-                [
-                    'sortBy'     => 'DealRating',
-                    'pageSize'   => 30,
-                    'pageNumber' => $page,
-                ]
-            )->json();
+            $deals = Http::get('https://www.cheapshark.com/api/1.0/deals', [
+                'sortBy' => 'DealRating',
+                'pageSize' => 30,
+                'pageNumber' => $page,
+            ])->json();
 
             if (empty($deals)) {
                 break;
             }
 
-            $unique = $unique
-                ->merge($deals)
-                ->unique('gameName')
-                ->values();
+            $unique = $unique->merge($deals)->unique('gameName')->values();
 
             $page++;
 
@@ -55,18 +49,10 @@ class GameDiscoveryService
         $deals = $this->recommend(60);
 
         $aaa = $deals->filter(function ($deal) {
-            return
-                ($deal['normalPrice']      ?? 0) >= 39.99 &&
-                ($deal['steamRatingCount'] ?? 0) >= 500 &&
-                ($deal['metacriticScore']  ?? 0) >= 75;
+            return ($deal['normalPrice'] ?? 0) >= 39.99 && ($deal['steamRatingCount'] ?? 0) >= 500 && ($deal['metacriticScore'] ?? 0) >= 75;
         });
 
-        return $aaa
-            ->sortByDesc('savings')
-            ->sortByDesc('dealRating')
-            ->sortBy('salePrice')
-            ->values()
-            ->take(5);
+        return $aaa->sortByDesc('savings')->sortByDesc('dealRating')->sortBy('salePrice')->values()->take(5);
     }
 
     private function fetchSteamGenres(Collection $deals): array
@@ -83,7 +69,7 @@ class GameDiscoveryService
             if (!empty($res[$id]['success']) && !empty($res[$id]['data']['genres'])) {
                 $result[$id] = collect($res[$id]['data']['genres'])
                     ->pluck('description')
-                    ->map(fn ($g) => strtolower($g))
+                    ->map(fn($g) => strtolower($g))
                     ->values()
                     ->all();
             }
@@ -92,24 +78,24 @@ class GameDiscoveryService
         return $result;
     }
 
-
     private function filterByGenre(Collection $deals, array $steamGenres, string $genre): Collection
     {
         $genre = strtolower($genre);
 
-        return $deals->filter(function ($deal) use ($steamGenres, $genre) {
-            $id = $deal['steamAppID'] ?? null;
-            if (!$id || !isset($steamGenres[$id])) {
-                return false;
-            }
+        return $deals
+            ->filter(function ($deal) use ($steamGenres, $genre) {
+                $id = $deal['steamAppID'] ?? null;
+                if (!$id || !isset($steamGenres[$id])) {
+                    return false;
+                }
 
-            return in_array($genre, $steamGenres[$id], true);
-        })->values();
+                return in_array($genre, $steamGenres[$id], true);
+            })
+            ->values();
     }
 
     public function buildDailyCache(): void
     {
-
         $deals = $this->recommend(200);
 
         $steamGenres = $this->fetchSteamGenres($deals);
@@ -130,9 +116,7 @@ class GameDiscoveryService
 
 
         foreach ($genres as $g) {
-            $filtered = $this->filterByGenre($deals, $steamGenres, $g)
-                ->take(20)
-                ->values();
+            $filtered = $this->filterByGenre($deals, $steamGenres, $g)->take(20)->values();
 
             $this->saveCache($g, $filtered);
         }
@@ -147,18 +131,16 @@ class GameDiscoveryService
         DB::table('game_recommendations')->updateOrInsert(
             ['type' => $type],
             [
-                'payload'    => $data->values()->toJson(),
+                'payload' => $data->values()->toJson(),
                 'updated_at' => now(),
                 'created_at' => now(),
-            ]
+            ],
         );
     }
 
     public function genre(string $genre, int $size = 20): Collection
     {
-        $json = DB::table('game_recommendations')
-            ->where('type', strtolower($genre))
-            ->value('payload');
+        $json = DB::table('game_recommendations')->where('type', strtolower($genre))->value('payload');
 
         if (!$json) {
             return collect();
@@ -169,9 +151,7 @@ class GameDiscoveryService
 
     public function cachedRecommend(int $size = 20): Collection
     {
-        $json = DB::table('game_recommendations')
-            ->where('type', 'recommend')
-            ->value('payload');
+        $json = DB::table('game_recommendations')->where('type', 'recommend')->value('payload');
 
         if (!$json) {
             return collect();
@@ -182,9 +162,7 @@ class GameDiscoveryService
 
     public function cachedAAA(): Collection
     {
-        $json = DB::table('game_recommendations')
-            ->where('type', 'aaa')
-            ->value('payload');
+        $json = DB::table('game_recommendations')->where('type', 'aaa')->value('payload');
 
         if (!$json) {
             return collect();

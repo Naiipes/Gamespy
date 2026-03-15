@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\GameSearchController;
@@ -9,10 +10,37 @@ use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
+// Temp route to build cache
+Route::get('/dev/build-cache', function() {
+    set_time_limit(300);
 
-Route::get('/', function () {
-    return view('home');
-})->name('home');
+    $deals = \Illuminate\Support\Facades\Http::get('https://www.cheapshark.com/api/1.0/deals', [
+        'sortBy'     => 'DealRating',
+        'pageSize'   => 60, 
+        'pageNumber' => 0,
+    ])->json();
+
+    $deals = collect($deals)
+        ->unique('title')          
+        ->filter(fn($d) => !empty($d['steamAppID'])) 
+        // only keep games with Steam images to show on Carousel (otherwise it looks bad)
+        ->take(20)                                
+        ->values()
+        ->toArray();
+    \Illuminate\Support\Facades\DB::table('game_recommendations')->updateOrInsert(
+        ['type' => 'recommend'],
+        [
+            'payload'    => json_encode(array_values($deals)),
+            'updated_at' => now(),
+            'created_at' => now(),
+        ]
+    );
+
+    return 'Saved ' . count($deals) . ' games';
+});
+
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/genres', function () {
     return view('genres');
