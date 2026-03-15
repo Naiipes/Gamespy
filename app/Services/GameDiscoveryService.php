@@ -126,7 +126,7 @@ class GameDiscoveryService
             'casual',
             'massively multiplayer',
             'free to play'
-];
+        ];
 
 
         foreach ($genres as $g) {
