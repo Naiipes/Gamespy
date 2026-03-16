@@ -10,6 +10,8 @@ class GameDiscoveryService
 {
     private ?Collection $cachedDeals = null;
 
+    private const STEAM_GENRE_CACHE_TYPE = 'steam_genres';
+
     private function uniqueDealKey(array $deal): ?string
     {
         return $deal['steamAppID']
@@ -70,25 +72,78 @@ class GameDiscoveryService
 
     private function fetchSteamGenres(Collection $deals): array
     {
-        $appIds = $deals->pluck('steamAppID')->filter()->unique()->values();
+        $appIds = $deals
+            ->pluck('steamAppID')
+            ->filter()
+            ->map(fn ($id) => (string) $id)
+            ->unique()
+            ->values();
 
+        $cached = $this->getSteamGenreCache();
         $result = [];
 
         foreach ($appIds as $id) {
+            if (array_key_exists($id, $cached)) {
+                $result[$id] = $cached[$id];
+            }
+        }
+
+        $missingIds = $appIds
+            ->reject(fn ($id) => array_key_exists($id, $cached))
+            ->values();
+
+        foreach ($missingIds as $id) {
             $res = Http::get('https://store.steampowered.com/api/appdetails', [
                 'appids' => $id,
             ])->json();
 
+            $genres = [];
+
             if (!empty($res[$id]['success']) && !empty($res[$id]['data']['genres'])) {
-                $result[$id] = collect($res[$id]['data']['genres'])
+                $genres = collect($res[$id]['data']['genres'])
                     ->pluck('description')
-                    ->map(fn($g) => strtolower($g))
+                    ->map(fn ($g) => strtolower($g))
                     ->values()
                     ->all();
             }
+
+            // Cache misses (including empty genre arrays) to avoid re-fetching next run.
+            $cached[$id] = $genres;
+            $result[$id] = $genres;
+        }
+
+        if ($missingIds->isNotEmpty()) {
+            $this->saveSteamGenreCache($cached);
         }
 
         return $result;
+    }
+
+    private function getSteamGenreCache(): array
+    {
+        $json = DB::table('game_recommendations')
+            ->where('type', self::STEAM_GENRE_CACHE_TYPE)
+            ->value('payload');
+
+        if (!$json) {
+            return [];
+        }
+
+        $decoded = json_decode($json, true);
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    private function saveSteamGenreCache(array $cache): void
+    {
+        DB::table('game_recommendations')->updateOrInsert(
+            ['type' => self::STEAM_GENRE_CACHE_TYPE],
+            [
+                'payload' => json_encode($cache, JSON_UNESCAPED_UNICODE),
+                'updated_at' => now(),
+                'created_at' => now(),
+            ],
+        );
     }
 
     private function filterByGenre(Collection $deals, array $steamGenres, string $genre): Collection
