@@ -6,7 +6,7 @@
 
 body {
     background-color: #171717;
-    min-height: 100vh;
+    min-height: 200vh;
     position: relative;
     padding-bottom: 50px;
     color: white;
@@ -101,6 +101,7 @@ footer p {
 .sticky {
     position: sticky;
     top: 0;
+    z-index: 999;
 }
 
 h1 {
@@ -426,7 +427,7 @@ h1 {
 .discount-badge {
     background-color: #4c6b22;
     color: #a4d007;
-    font-size: 0.85rem;
+    font-size: 1rem;
     font-weight: 700;
     padding: 3px 7px;
     border-radius: 3px;
@@ -434,13 +435,13 @@ h1 {
 
 .original-price {
     color: #aaaaaa;
-    font-size: 0.85rem;
+    font-size: 1rem;
     text-decoration: line-through;
 }
 
 .sale-price {
     color: white;
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     font-weight: 700;
 }
 
@@ -470,7 +471,7 @@ h1 {
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: #262626;
+    background-color: #262626e5;
     padding: 10px 18px;
     z-index: 3;
     display: flex;
