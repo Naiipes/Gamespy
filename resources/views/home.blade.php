@@ -32,8 +32,9 @@
                         $storeName = $stores[$game['storeID'] ?? ''] ?? 'View Deal';
                     @endphp
 
-                    <div class="carousel-slide {{ $index === 0 ? 'current-slide' : '' }}"
-                        data-title="{{ $game['title'] ?? 'Unknown title' }}">
+                    <a class="carousel-slide {{ $index === 0 ? 'current-slide' : '' }}"
+                        data-title="{{ $game['title'] ?? 'Unknown title' }}"
+                        href="https://www.cheapshark.com/redirect?dealID={{ $game['dealID'] }}" target="_blank">
 
                         <img src="https://cdn.akamai.steamstatic.com/steam/apps/{{ $game['steamAppID'] }}/capsule_616x353.jpg"
                             onerror="
@@ -54,17 +55,13 @@
                                 <span class="original-price">${{ $game['normalPrice'] }}</span>
                                 <span class="sale-price">${{ $game['salePrice'] }}</span>
                             </div>
-                            <a href="https://www.cheapshark.com/redirect?dealID={{ $game['dealID'] }}" target="_blank"
-                                class="store-btn" title="View Deal">
-                                @if (!empty($game['storeID']))
-                                    <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
-                                        alt="{{ $storeName }}" style="height: 20px; width: auto;"
-                                        onerror="this.style.display='none'">
-                                @endif
-                                {{ $storeName }}
-                            </a>
+                            @if (!empty($game['storeID']))
+                                <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
+                                    style="width: 35px; height: auto;" alt="{{ $storeName }}"
+                                    onerror="this.style.display='none'">
+                            @endif
                         </div>
-                    </div>
+                    </a>
                 @endforeach
 
             </div>
@@ -105,7 +102,8 @@
                     $storeName = $stores[$game['storeID'] ?? ''] ?? 'View Deal';
                 @endphp
 
-                <a class="catalog-item" href="https://www.cheapshark.com/redirect?dealID={{ $game['dealID'] }}" target="_blank">
+                <a class="catalog-item" href="https://www.cheapshark.com/redirect?dealID={{ $game['dealID'] }}"
+                    target="_blank">
                     <img src="https://cdn.akamai.steamstatic.com/steam/apps/{{ $game['steamAppID'] }}/capsule_616x353.jpg"
                         onerror="
                             if (!this.dataset.fallback1) {
@@ -115,14 +113,21 @@
                                 this.dataset.fallback2 = true;
                                 this.src='{{ $game['thumb'] }}';
                             }"
-                            alt="{{ $game['title'] }}">
+                        alt="{{ $game['title'] }}">
 
-                    <div class="catalog-item-title">{{ $game['title'] }} </div>
-                    <div class="catalog-item-pricing">
-                        <span class="catalog-discount-badge">-{{ $savings }}%</span>
-                        <span class="catalog-original-price">${{ $game['normalPrice'] }}</span>
-                        <span class="catalog-sale-price">${{ $game['salePrice'] }}</span>
-                    </div>
+                        
+                        <div class="catalog-item-title">{{ $game['title'] }} </div>
+                        <div class="catalog-item-pricing">
+                            <span class="catalog-discount-badge">-{{ $savings }}%</span>
+                            <span class="catalog-original-price">${{ $game['normalPrice'] }}</span>
+                            <span class="catalog-sale-price">${{ $game['salePrice'] }}</span>
+                            @if (!empty($game['storeID']))
+                                <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
+                                    style="width: 24px; height: auto; margin-left: auto;" 
+                                    alt="{{ $storeName }}"
+                                    onerror="this.style.display='none'">
+                            @endif
+                        </div>
                 </a>
             @endforeach
         </ul>
