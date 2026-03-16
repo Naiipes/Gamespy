@@ -11,6 +11,10 @@ class GameDiscoveryService
     private ?Collection $cachedDeals = null;
 
     private const STEAM_GENRE_CACHE_TYPE = 'steam_genres';
+    private const RECOMMENDATION_TARGET_SIZE = 200;
+    private const CHEAPSHARK_PAGE_SIZE = 30;
+    private const CHEAPSHARK_EXTRA_PAGE_BUFFER = 2;
+    private const AAA_SOURCE_SIZE = 60;
 
     private function uniqueDealKey(array $deal): ?string
     {
@@ -21,19 +25,20 @@ class GameDiscoveryService
             ?? null;
     }
 
-    public function recommend(int $size = 60): Collection
+    public function recommend(int $size): Collection
     {
         if ($this->cachedDeals !== null) {
             return $this->cachedDeals->take($size)->values();
         }
 
         $page = 0;
+        $maxPages = (int) ceil($size / self::CHEAPSHARK_PAGE_SIZE) + self::CHEAPSHARK_EXTRA_PAGE_BUFFER;
         $unique = collect();
 
-        while ($unique->count() < $size) {
+        while ($unique->count() < $size && $page < $maxPages) {
             $deals = Http::get('https://www.cheapshark.com/api/1.0/deals', [
                 'sortBy' => 'DealRating',
-                'pageSize' => 30,
+                'pageSize' => self::CHEAPSHARK_PAGE_SIZE,
                 'pageNumber' => $page,
             ])->json();
 
@@ -48,10 +53,6 @@ class GameDiscoveryService
                 ->values();
 
             $page++;
-
-            if ($page > 20) {
-                break;
-            }
         }
 
         $this->cachedDeals = $unique->take($size)->values();
@@ -61,7 +62,7 @@ class GameDiscoveryService
 
     public function popularAAA(): Collection
     {
-        $deals = $this->recommend(60);
+        $deals = $this->recommend(self::AAA_SOURCE_SIZE);
 
         $aaa = $deals->filter(function ($deal) {
             return ($deal['normalPrice'] ?? 0) >= 39.99 && ($deal['steamRatingCount'] ?? 0) >= 500 && ($deal['metacriticScore'] ?? 0) >= 75;
@@ -164,7 +165,7 @@ class GameDiscoveryService
 
     public function buildDailyCache(): void
     {
-        $deals = $this->recommend(200);
+        $deals = $this->recommend(self::RECOMMENDATION_TARGET_SIZE);
 
         $steamGenres = $this->fetchSteamGenres($deals);
 
