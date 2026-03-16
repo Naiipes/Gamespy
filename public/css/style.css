@@ -6,7 +6,7 @@
 
 body {
     background-color: #171717;
-    min-height: 200vh;
+    min-height: 100vh;
     position: relative;
     padding-bottom: 50px;
     color: white;
@@ -479,3 +479,87 @@ h1 {
     justify-content: space-between;
 }
 /* Home Carousel End */
+
+/* Catalog Start */
+
+.catalog-container {
+    position: relative;
+    top: 100px;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.catalog-container h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.catalog-item {
+    background-color: #262626;
+    border-radius: 2px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    overflow: hidden;
+}
+
+.catalog-list {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    list-style: none;
+}
+
+.catalog-item img {
+    width: 100%;
+    aspect-ratio: 616 / 353;
+    object-fit: cover;
+    display: block;
+}
+
+.catalog-item-title {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #f5f5f5;
+    padding: 12px;
+    flex-grow: 1;
+}
+
+.catalog-item-pricing {
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px 12px;
+}
+
+.catalog-discount-badge {
+    background-color: #4c6b22;
+    color: #a4d007;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+.catalog-original-price {
+    color: #aaaaaa;
+    font-size: 1rem;
+    text-decoration: line-through;
+}
+
+.catalog-sale-price {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.catalog-item:hover {
+    background-color: #3f3f46;
+}
+
+/* Catalog End */

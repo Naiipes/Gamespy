@@ -1,9 +1,10 @@
 @extends('layout.app')
 
 @section('content')
+    {{-- Carousel Start --}}
     <div class="carousel-wrapper">
-        <h1>Trending</h1>
-    
+        <h1>BEST DEALS</h1>
+
         <button class="carousel-btn prev-btn" id="prevBtn">&#10094;</button>
         <div class="carousel-container" id="carouselContainer">
             <div class="carousel-track" id="carouselTrack">
@@ -12,11 +13,11 @@
                     @php
                         $savings = round(floatval($game['savings'] ?? 0));
                         $stores = [
-                            '1'  => 'Steam',
-                            '2'  => 'GamersGate',
-                            '3'  => 'GreenManGaming',
-                            '7'  => 'GOG',
-                            '8'  => 'Origin',
+                            '1' => 'Steam',
+                            '2' => 'GamersGate',
+                            '3' => 'GreenManGaming',
+                            '7' => 'GOG',
+                            '8' => 'Origin',
                             '11' => 'Humble Store',
                             '13' => 'Fanatical',
                             '15' => 'Gamesplanet',
@@ -34,9 +35,8 @@
                     <div class="carousel-slide {{ $index === 0 ? 'current-slide' : '' }}"
                         data-title="{{ $game['title'] ?? 'Unknown title' }}">
 
-                        <img
-                        src="https://cdn.akamai.steamstatic.com/steam/apps/{{ $game['steamAppID'] }}/capsule_616x353.jpg"
-                        onerror="
+                        <img src="https://cdn.akamai.steamstatic.com/steam/apps/{{ $game['steamAppID'] }}/capsule_616x353.jpg"
+                            onerror="
                             if (!this.dataset.fallback1) {
                                 this.dataset.fallback1 = true;
                                 this.src='https://cdn.akamai.steamstatic.com/steam/apps/{{ $game['steamAppID'] }}/header.jpg';
@@ -44,7 +44,7 @@
                                 this.dataset.fallback2 = true;
                                 this.src='{{ $game['thumb'] }}';
                             }"
-                        alt="{{ $game['title'] }}">
+                            alt="{{ $game['title'] }}">
 
                         <div class="slide-title">{{ $game['title'] }}</div>
 
@@ -58,7 +58,8 @@
                                 class="store-btn" title="View Deal">
                                 @if (!empty($game['storeID']))
                                     <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
-                                        alt="{{ $storeName }}" style="height: 20px; width: auto;" onerror="this.style.display='none'">
+                                        alt="{{ $storeName }}" style="height: 20px; width: auto;"
+                                        onerror="this.style.display='none'">
                                 @endif
                                 {{ $storeName }}
                             </a>
@@ -75,6 +76,55 @@
                 <button class="nav-dot {{ $index === 0 ? 'active' : '' }}"></button>
             @endforeach
         </div>
+    </div>
+    {{-- Carousel End --}}
+
+    <div class="catalog-container">
+        <h1>CATALOG</h1>
+        <ul class="catalog-list">
+            @foreach ($catalogGames as $game)
+                @php
+                    $savings = round(floatval($game['savings'] ?? 0));
+                    $stores = [
+                        '1' => 'Steam',
+                        '2' => 'GamersGate',
+                        '3' => 'GreenManGaming',
+                        '7' => 'GOG',
+                        '8' => 'Origin',
+                        '11' => 'Humble Store',
+                        '13' => 'Fanatical',
+                        '15' => 'Gamesplanet',
+                        '21' => 'WinGameStore',
+                        '23' => 'GameBillet',
+                        '25' => 'Voidu',
+                        '27' => 'Epic Games',
+                        '28' => 'Amazon',
+                        '29' => 'GamesPlanet US',
+                        '35' => 'IndieGala',
+                    ];
+                    $storeName = $stores[$game['storeID'] ?? ''] ?? 'View Deal';
+                @endphp
+                <a class="catalog-item" href="" target="_blank">
+                    <img src="https://cdn.akamai.steamstatic.com/steam/apps/{{ $game['steamAppID'] }}/capsule_616x353.jpg"
+                        alt="{{ $game['title'] }}"
+                        onerror="
+                            if (!this.dataset.fallback1) {
+                                this.dataset.fallback1 = true;
+                                this.src='https://cdn.akamai.steamstatic.com/steam/apps/{{ $game['steamAppID'] }}/header.jpg';
+                            } else if (!this.dataset.fallback2) {
+                                this.dataset.fallback2 = true;
+                                this.src='{{ $game['thumb'] }}';
+                            }"
+                            alt="{{ $game['title'] }}">
+                    <div class="catalog-item-title">{{ $game['title'] }} </div>
+                    <div class="catalog-item-pricing">
+                        <span class="catalog-discount-badge">-{{ $savings }}%</span>
+                        <span class="catalog-original-price">${{ $game['normalPrice'] }}</span>
+                        <span class="catalog-sale-price">${{ $game['salePrice'] }}</span>
+                    </div>
+                </a>
+            @endforeach
+        </ul>
     </div>
 
     <script src="{{ asset('js/carousel.js?v=') . time() }}"></script>
