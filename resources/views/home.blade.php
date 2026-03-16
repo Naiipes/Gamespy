@@ -104,9 +104,9 @@
                     ];
                     $storeName = $stores[$game['storeID'] ?? ''] ?? 'View Deal';
                 @endphp
-                <a class="catalog-item" href="" target="_blank">
+
+                <a class="catalog-item" href="https://www.cheapshark.com/redirect?dealID={{ $game['dealID'] }}" target="_blank">
                     <img src="https://cdn.akamai.steamstatic.com/steam/apps/{{ $game['steamAppID'] }}/capsule_616x353.jpg"
-                        alt="{{ $game['title'] }}"
                         onerror="
                             if (!this.dataset.fallback1) {
                                 this.dataset.fallback1 = true;
@@ -116,6 +116,7 @@
                                 this.src='{{ $game['thumb'] }}';
                             }"
                             alt="{{ $game['title'] }}">
+
                     <div class="catalog-item-title">{{ $game['title'] }} </div>
                     <div class="catalog-item-pricing">
                         <span class="catalog-discount-badge">-{{ $savings }}%</span>
