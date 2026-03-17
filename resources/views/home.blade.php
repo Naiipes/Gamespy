@@ -77,7 +77,6 @@
     {{-- Carousel End --}}
 
     <div class="catalog-container">
-        <h1>CATALOG</h1>
         <ul class="catalog-list">
             @foreach ($catalogGames as $game)
                 @php

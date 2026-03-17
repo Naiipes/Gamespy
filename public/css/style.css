@@ -7,9 +7,16 @@
 body {
     background-color: #171717;
     min-height: 100vh;
-    position: relative;
+    display: flex;
+    flex-direction: column;
     color: white;
     font-family: "Inter Variable", Inter, sans-serif;
+}
+
+.content-wrapper {
+    flex: 1; /* Added this to push footer to bottom */
+    display: flex;
+    flex-direction: column;
 }
 
 /* Nav Bar Start */
@@ -176,10 +183,19 @@ h1 {
 
 /* Login and Register Styles by Satoi*/
 /*----------------------------------------------------*/
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    width: 100%;
+}
+
 .login-container,
 .register-container {
+    width: 100%;
     max-width: 400px;
-    margin: 50px auto;
+    margin: auto;
     padding: 20px;
     background-color: #262626;
     border-radius: 8px;
@@ -219,6 +235,7 @@ h1 {
 
 .login-btn,
 .register-btn {
+    font-family: inherit;
     width: 100%;
     padding: 10px;
     background-color: #4481b8;

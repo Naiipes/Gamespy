@@ -1,26 +1,25 @@
 <x-app-layout>
 
-<div class="max-w-4xl mx-auto p-6">
+    <div class="max-w-4xl mx-auto p-6">
 
-<h1 class="text-2xl font-bold mb-4">
-My Wishlist
-</h1>
+        <h1 class="text-2xl font-bold mb-4">
+            My Wishlist
+        </h1>
 
-<div id="wishlist"></div>
+        <div id="wishlist"></div>
 
-</div>
+    </div>
 
-<script>
+    <script>
+        fetch("/wishlist")
+            .then(res => res.json())
+            .then(data => {
 
-fetch("/wishlist")
-.then(res => res.json())
-.then(data => {
+                let html = ""
 
-let html = ""
+                data.forEach(game => {
 
-data.forEach(game => {
-
-html += `
+                    html += `
 <div class="border p-4 mb-3 flex items-center justify-between">
 
 <div class="flex items-center">
@@ -39,38 +38,38 @@ html += `
 </div>
 `
 
-})
+                })
 
-document.getElementById("wishlist").innerHTML = html
+                document.getElementById("wishlist").innerHTML = html
 
-// 削除ボタンのイベント
-document.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const gameId = this.getAttribute('data-game-id');
-        if (confirm('Are you sure you want to delete this game from wishlist?')) {
-            fetch(`/wishlist/game/${gameId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
+                // 削除ボタンのイベント
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const gameId = this.getAttribute('data-game-id');
+                        if (confirm('Are you sure you want to delete this game from wishlist?')) {
+                            fetch(`/wishlist/game/${gameId}`, {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector(
+                                            'meta[name="csrf-token"]').getAttribute('content')
+                                    }
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.message === 'Game removed from wishlist') {
+                                        location.reload(); // ページリロードで更新
+                                    } else {
+                                        alert('Delete failed: ' + data.message);
+                                    }
+                                })
+                                .catch(error => {
+                                    alert('Error: ' + error);
+                                });
+                        }
+                    });
+                });
+
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.message === 'Game removed from wishlist') {
-                    location.reload(); // ページリロードで更新
-                } else {
-                    alert('Delete failed: ' + data.message);
-                }
-            })
-            .catch(error => {
-                alert('Error: ' + error);
-            });
-        }
-    });
-});
-
-})
-
-</script>
+    </script>
 
 </x-app-layout>
