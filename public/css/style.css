@@ -13,8 +13,8 @@ body {
     font-family: "Inter Variable", Inter, sans-serif;
 }
 
-.content-wrapper {
-    flex: 1; /* Added this to push footer to bottom */
+.content-wrapper { /* Added this to push footer to bottom */
+    flex: 1; 
     display: flex;
     flex-direction: column;
 }
@@ -108,11 +108,6 @@ footer {
     position: sticky;
     top: 0;
     z-index: 999;
-}
-
-h1 {
-    color: white;
-    text-align: center;
 }
 
 .dropdown {
@@ -540,3 +535,71 @@ h1 {
 }
 
 /* Catalog End */
+
+/* Search UI Start */
+
+.results-wrapper {
+    margin: 20px 100px;
+    overflow-x: hidden;
+}
+
+.results-wrapper h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+}
+
+.result-card {
+    width: 600px;
+    height: 140px;
+    margin: 15px 0;
+    background-color: #262626;
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: row; 
+    text-decoration: none;
+    color: white;
+    overflow: hidden;
+}
+
+.result-card:hover {
+    background-color: #3f3f46;
+}
+
+.result-card > img {
+    width: 200px;
+    height: 100%;
+    object-fit: cover;
+    flex-shrink: 0; 
+}
+
+.result-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 14px 16px;
+    gap: 8px;
+}
+
+.result-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f5f5f5;
+}
+
+.result-price {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #a4d007;
+}
+
+.result-card:hover {
+    background-color: #3f3f46;
+}
+
+.result-card img {
+    display: block;
+}
+
+/* Search UI End */
