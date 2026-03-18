@@ -51,9 +51,9 @@
 
                         <div class="slide-info-bar">
                             <div class="slide-pricing">
-                                <span class="discount-badge">-{{ $savings }}%</span>
-                                <span class="original-price">${{ $game['normalPrice'] }}</span>
-                                <span class="sale-price">${{ $game['salePrice'] }}</span>
+                                <div class="discount-badge">-{{ $savings }}%</div>
+                                <div class="original-price">${{ $game['normalPrice'] }}</div>
+                                <div class="sale-price">${{ $game['salePrice'] }}</div>
                             </div>
                             @if (!empty($game['storeID']))
                                 <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
@@ -116,9 +116,9 @@
                         
                         <div class="catalog-item-title">{{ $game['title'] }} </div>
                         <div class="catalog-item-pricing">
-                            <span class="catalog-discount-badge">-{{ $savings }}%</span>
-                            <span class="catalog-original-price">${{ $game['normalPrice'] }}</span>
-                            <span class="catalog-sale-price">${{ $game['salePrice'] }}</span>
+                            <div class="catalog-discount-badge">-{{ $savings }}%</div>
+                            <div class="catalog-original-price">${{ $game['normalPrice'] }}</div>
+                            <div class="catalog-sale-price">${{ $game['salePrice'] }}</div>
                             @if (!empty($game['storeID']))
                                 <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
                                     style="width: 24px; height: auto; margin-left: auto;" 

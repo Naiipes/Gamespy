@@ -19,7 +19,7 @@ class GameSearchController extends Controller
             return view('search', ['games' => []]);
         }
 
-        $results = $service->search($query);
+        $results = $service->searchDeals($query);
 
         if (empty($results)) {
             if ($request->wantsJson()) {
@@ -34,15 +34,16 @@ class GameSearchController extends Controller
             $record = Game::updateOrCreate(
                 ['cheapshark_id' => $game['gameID']],
                 [
-                    'title' => $game['external'],
+                    'title' => $game['title'],
                     'thumb' => $game['thumb'],
-                    'cheapest_price' => $game['cheapest'],
+                    'cheapest_price' => $game['salePrice'],
                 ],
             );
 
-            // APIデータを保持
-            $record->dealID = $game['dealestDealID'] ?? $game['cheapestDealID'] ?? null;
+            $record->dealID = $game['dealID'] ?? null;
             $record->steamAppID = $game['steamAppID'] ?? null;
+            $record->salePrice = $game['salePrice'] ?? null;
+            $record->normalPrice = $game['normalPrice'] ?? null;
             $games[] = $record;
         }
 

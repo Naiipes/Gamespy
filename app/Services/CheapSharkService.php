@@ -22,6 +22,19 @@ class CheapSharkService
 
     }
 
+    public function searchDeals($query)
+    {
+        $response = Http::get(
+            "https://www.cheapshark.com/api/1.0/deals",
+            [
+                "title" => $query,
+                "pageSize" => 20
+            ]
+        );
+
+        return $response->json();
+    }
+
     public function deals($gameId)
     {
 
