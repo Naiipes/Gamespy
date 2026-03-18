@@ -40,6 +40,9 @@ class GameSearchController extends Controller
                 ],
             );
 
+            // APIデータを保持
+            $record->dealID = $game['dealestDealID'] ?? $game['cheapestDealID'] ?? null;
+            $record->steamAppID = $game['steamAppID'] ?? null;
             $games[] = $record;
         }
 
