@@ -13,12 +13,7 @@ class PriceCheckerService
 
     public function checkPrices()
     {
-
-        $stores = [
-            "1"=>"Steam",
-            "2"=>"GamersGate",
-            "3"=>"GreenManGaming"
-        ];
+        $stores = CheapSharkService::getAllStores();
 
         $wishlists = Wishlist::with(["game","user"])->get();
 

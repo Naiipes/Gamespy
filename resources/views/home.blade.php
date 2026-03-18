@@ -1,6 +1,10 @@
 @extends('layout.app')
 
 @section('content')
+    @php
+        $stores = \App\Services\CheapSharkService::getAllStores();
+    @endphp
+
     {{-- Carousel Start --}}
     <div class="carousel-wrapper">
         <h1>BEST DEALS</h1>
@@ -12,23 +16,6 @@
                 @foreach ($popularGames as $index => $game)
                     @php
                         $savings = round(floatval($game['savings'] ?? 0));
-                        $stores = [
-                            '1' => 'Steam',
-                            '2' => 'GamersGate',
-                            '3' => 'GreenManGaming',
-                            '7' => 'GOG',
-                            '8' => 'Origin',
-                            '11' => 'Humble Store',
-                            '13' => 'Fanatical',
-                            '15' => 'Gamesplanet',
-                            '21' => 'WinGameStore',
-                            '23' => 'GameBillet',
-                            '25' => 'Voidu',
-                            '27' => 'Epic Games',
-                            '28' => 'Amazon',
-                            '29' => 'GamesPlanet US',
-                            '35' => 'IndieGala',
-                        ];
                         $storeName = $stores[$game['storeID'] ?? ''] ?? 'View Deal';
                     @endphp
 
@@ -81,23 +68,6 @@
             @foreach ($catalogGames as $game)
                 @php
                     $savings = round(floatval($game['savings'] ?? 0));
-                    $stores = [
-                        '1' => 'Steam',
-                        '2' => 'GamersGate',
-                        '3' => 'GreenManGaming',
-                        '7' => 'GOG',
-                        '8' => 'Origin',
-                        '11' => 'Humble Store',
-                        '13' => 'Fanatical',
-                        '15' => 'Gamesplanet',
-                        '21' => 'WinGameStore',
-                        '23' => 'GameBillet',
-                        '25' => 'Voidu',
-                        '27' => 'Epic Games',
-                        '28' => 'Amazon',
-                        '29' => 'GamesPlanet US',
-                        '35' => 'IndieGala',
-                    ];
                     $storeName = $stores[$game['storeID'] ?? ''] ?? 'View Deal';
                 @endphp
 
