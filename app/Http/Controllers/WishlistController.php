@@ -10,22 +10,31 @@ class WishlistController extends Controller
 
     public function store(Request $request)
     {
+        $validated = $request->validate([
+            'game_id' => ['required', 'integer', 'exists:games,id'],
+            'target_price' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $alreadyExists = Wishlist::where('user_id', auth()->id())
+            ->where('game_id', $validated['game_id'])
+            ->exists();
+
+        if ($alreadyExists) {
+            return response()->noContent(409);
+        }
+
         $currentCount = auth()->user()->wishlists()->count();
-        if ($currentCount >= 10) {
-            return response()->json([
-                "message" => "Wishlist is full. Maximum 10 items allowed."
-            ], 400);
+        if ($currentCount >= 50) {
+            return response()->noContent(422);
         }
 
         Wishlist::create([
             "user_id" => auth()->id(),
-            "game_id" => $request->game_id,
-            "target_price" => $request->target_price
+            "game_id" => $validated['game_id'],
+            "target_price" => $validated['target_price']
         ]);
 
-        return response()->json([
-            "message" => "added"
-        ]);
+        return response()->noContent(201);
     }
 
     public function index()
