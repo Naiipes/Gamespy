@@ -550,7 +550,7 @@ footer {
 }
 
 .result-card {
-    width: 600px;
+    width: 700px;
     height: 140px;
     margin: 15px 0;
     background-color: #262626;
@@ -568,18 +568,24 @@ footer {
 }
 
 .result-card > img {
-    width: 200px;
+    width: 250px;
     height: 100%;
     object-fit: cover;
     flex-shrink: 0; 
 }
 
 .result-info {
+    position: relative;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     padding: 14px 16px;
     gap: 8px;
+}
+
+.result-store-logo {
+    position: relative;
+    top: 20px;
 }
 
 .result-title {
@@ -592,6 +598,12 @@ footer {
     font-size: 1rem;
     font-weight: bold;
     color: #a4d007;
+}
+
+.result-pricing {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .result-card:hover {

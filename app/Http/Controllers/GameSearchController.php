@@ -44,6 +44,8 @@ class GameSearchController extends Controller
             $record->steamAppID = $game['steamAppID'] ?? null;
             $record->salePrice = $game['salePrice'] ?? null;
             $record->normalPrice = $game['normalPrice'] ?? null;
+            $record->savings = $game['savings'] ?? null;
+            $record->storeID = $game['storeID'] ?? null;
             $games[] = $record;
         }
 

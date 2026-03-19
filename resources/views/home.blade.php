@@ -13,13 +13,13 @@
         <div class="carousel-container" id="carouselContainer">
             <div class="carousel-track" id="carouselTrack">
 
-                @foreach ($popularGames as $index => $game)
+                @foreach ($popularGames as  $game)
                     @php
-                        $savings = round(floatval($game['savings'] ?? 0));
-                        $storeName = $stores[$game['storeID'] ?? ''] ?? 'View Deal';
+                        $savings = round(floatval($game['savings']));
+                        $storeName = $stores[$game['storeID']];
                     @endphp
 
-                    <a class="carousel-slide {{ $index === 0 ? 'current-slide' : '' }}"
+                    <a class="carousel-slide {{ $game === 0 ? 'current-slide' : '' }}"
                         data-title="{{ $game['title'] ?? 'Unknown title' }}"
                         href="https://www.cheapshark.com/redirect?dealID={{ $game['dealID'] }}" target="_blank">
 
@@ -71,7 +71,8 @@
                     $storeName = $stores[$game['storeID'] ?? ''] ?? 'View Deal';
                 @endphp
 
-                <a class="catalog-item" href="https://www.cheapshark.com/redirect?dealID={{ $game['dealID'] }}" target="_blank">
+                <a class="catalog-item" href="https://www.cheapshark.com/redirect?dealID={{ $game['dealID'] }}"
+                    target="_blank">
                     <img src="https://cdn.akamai.steamstatic.com/steam/apps/{{ $game['steamAppID'] }}/capsule_616x353.jpg"
                         onerror="
                             if (!this.dataset.fallback1) {
@@ -83,19 +84,18 @@
                             }"
                         alt="{{ $game['title'] }}">
 
-                        
-                        <div class="catalog-item-title">{{ $game['title'] }} </div>
-                        <div class="catalog-item-pricing">
-                            <div class="catalog-discount-badge">-{{ $savings }}%</div>
-                            <div class="catalog-original-price">${{ $game['normalPrice'] }}</div>
-                            <div class="catalog-sale-price">${{ $game['salePrice'] }}</div>
-                            @if (!empty($game['storeID']))
-                                <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
-                                    style="width: 24px; height: auto; margin-left: auto;" 
-                                    alt="{{ $storeName }}"
-                                    onerror="this.style.display='none'">
-                            @endif
-                        </div>
+
+                    <div class="catalog-item-title">{{ $game['title'] }} </div>
+                    <div class="catalog-item-pricing">
+                        <div class="catalog-discount-badge">-{{ $savings }}%</div>
+                        <div class="catalog-original-price">${{ $game['normalPrice'] }}</div>
+                        <div class="catalog-sale-price">${{ $game['salePrice'] }}</div>
+                        @if (!empty($game['storeID']))
+                            <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
+                                style="width: 24px; height: auto; margin-left: auto;" alt="{{ $storeName }}"
+                                onerror="this.style.display='none'">
+                        @endif
+                    </div>
                 </a>
             @endforeach
         </ul>
