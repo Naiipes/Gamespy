@@ -25,7 +25,7 @@
                         <h2 class="result-title">{{ $game['title'] }}</h2>
                         @if ((float) $game['salePrice'] < (float) $game['normalPrice'])
                         <div class="result-pricing">
-                            <div class="discount-badge">-{{ $savings }}%</div>
+                            <div class="catalog-discount-badge">-{{ $savings }}%</div>
                             <div class="original-price">${{ $game['normalPrice'] }}</div>
                             <div class="sale-price">${{ $game['salePrice'] }}</div>
                         </div>

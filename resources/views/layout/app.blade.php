@@ -42,7 +42,7 @@
                         <li><a href="">Free to Play</a></li>
                     </ul>
                 </li>
-                <li><a href="">Wishlist</a></li>
+                <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
                 @auth
                     <li><form action="{{ route('logout') }}" method="POST" style="display: inline;">
                         @csrf

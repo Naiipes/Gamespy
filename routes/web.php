@@ -35,10 +35,6 @@ Route::get('/genres', function () {
     return view('genres');
 })->name('genres');
 
-Route::get('/trending', function () {
-    return view('trending');
-})->name('trending');
-
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -57,19 +53,16 @@ Route::get("/api/search",[GameSearchController::class,"search"]);
 Route::get("/api/game/{id}/deals",[GameDealController::class,"show"]);
 
 
+
+Route::post('/wishlist',[WishlistController::class,'store']);
+Route::get('/wishlist',[WishlistController::class,'index'])->name('wishlist');
+Route::delete('/wishlist/game/{game_id}',[WishlistController::class,'deleteGame']);
 Route::middleware('auth')->group(function () {
-
-    Route::post('/wishlist',[WishlistController::class,'store']);
-    Route::get('/wishlist',[WishlistController::class,'index']);
-    Route::delete('/wishlist/game/{game_id}',[WishlistController::class,'deleteGame']);
-
     Route::get('/notifications', function () {
         return view('notifications');
     });
-
     Route::get('/api/notifications',[NotificationController::class,'index']);
-
-}); 
+});
 
 
 Route::get('/games/popular', [GameDiscoveryController::class, 'popular']);

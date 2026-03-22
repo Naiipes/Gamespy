@@ -39,13 +39,24 @@ class WishlistController extends Controller
 
     public function index()
     {
+        if (!auth()->check()) {
+            if (request()->wantsJson()) {
+                return response()->json([]);
+            }
+            return view('wishlist', ['wishlists' => []]);
+        }
 
-        return auth()
+        $wishlists = auth()
             ->user()
             ->wishlists()
             ->with("game")
             ->get();
 
+        if (request()->wantsJson()) {
+            return response()->json($wishlists);
+        }
+
+        return view('wishlist', compact('wishlists'));
     }
 
     public function deleteGame(Request $request, $game_id)

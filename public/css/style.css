@@ -297,6 +297,7 @@ footer {
     z-index: 1;
 }
 
+
 .carousel-wrapper h1 {
     margin-bottom: 10px;
     color: white;
@@ -536,7 +537,7 @@ footer {
 
 /* Catalog End */
 
-/* Search UI Start */
+/* Search Start */
 
 .results-wrapper {
     margin: 20px 100px;
@@ -614,4 +615,30 @@ footer {
     display: block;
 }
 
-/* Search UI End */
+/* Search End */
+
+/* Wishlist Start */
+
+.wishlist-container {
+    max-width: 1200px;
+    margin: 100px auto 20px;
+    padding: 0 20px;
+}
+
+.wishlist-message {
+    text-decoration: none;
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    background-color: #262626c3;
+}
+
+.wishlist-message:hover {
+    background-color: #3f3f46c3;
+}
+
+/* Wishlist End */
