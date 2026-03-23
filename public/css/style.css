@@ -13,8 +13,9 @@ body {
     font-family: "Inter Variable", Inter, sans-serif;
 }
 
-.content-wrapper { /* Added this to push footer to bottom */
-    flex: 1; 
+.content-wrapper {
+    /* Added this to push footer to bottom */
+    flex: 1;
     display: flex;
     flex-direction: column;
 }
@@ -313,7 +314,6 @@ footer {
     z-index: 1;
 }
 
-
 .carousel-wrapper h1 {
     margin-bottom: 10px;
     color: white;
@@ -574,7 +574,7 @@ footer {
     border-radius: 4px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     display: flex;
-    flex-direction: row; 
+    flex-direction: row;
     text-decoration: none;
     color: white;
     overflow: hidden;
@@ -588,15 +588,24 @@ footer {
     width: 250px;
     height: 100%;
     object-fit: cover;
-    flex-shrink: 0; 
+    flex-shrink: 0;
 }
 
 .result-info {
-    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    width: 100%;
+    padding: 14px 16px;
+    gap: 12px;
+}
+
+.result-main {
+    min-width: 0;
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding: 14px 16px;
     gap: 8px;
 }
 
@@ -623,6 +632,18 @@ footer {
     gap: 8px;
 }
 
+.result-wishlist-btn {
+    margin-left: auto;
+    align-self: center;
+    flex-shrink: 0;
+    padding: 6px;
+}
+
+.result-wishlist-btn svg {
+    width: 34px;
+    height: 34px;
+}
+
 .result-card:hover {
     background-color: #3f3f46;
 }
@@ -643,12 +664,25 @@ footer {
 }
 
 .wishlist-btn svg path {
-    stroke: #a3a3a3;
+    stroke: #c0c0c0;
 }
 
 .wishlist-btn:hover svg path {
     stroke: #ff4d4d;
     fill: #ff4d4d;
+}
+
+/* Wishlist追加済み → 赤く維持 */
+.wishlist-btn.in-wishlist svg path {
+    stroke: #ff4d4d;
+    fill: #ff4d4d;
+}
+
+/* 追加済みをホバー → 薄くして「削除できる」と示唆 */
+.wishlist-btn.in-wishlist:hover svg path {
+    stroke: #ff4d4d;
+    fill: #ff4d4d;
+    opacity: 0.5;
 }
 
 .guest-wishlist-message {

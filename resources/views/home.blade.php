@@ -42,11 +42,11 @@
                                 <div class="original-price">${{ $game['normalPrice'] }}</div>
                                 <div class="sale-price">${{ $game['salePrice'] }}</div>
                                 <button class="wishlist-btn"
-                                    data-game-id="{{ $game['gameID'] }}"
+                                    data-cheapshark-id="{{ $game['gameID'] }}"
                                     data-title="{{ $game['title'] }}"
                                     data-thumb="{{ $game['thumb'] }}"
                                     data-price="{{ $game['salePrice'] }}"
-                                    onclick="event.preventDefault(); addToWishlist(this)">
+                                    onclick="event.preventDefault(); event.stopPropagation(); addToWishlist(this)">
                                     <x-heart-btn />
                                 </button>
                             </div>
@@ -99,11 +99,11 @@
                         <div class="catalog-sale-price">${{ $game['salePrice'] }}
                         </div>
                         <button class="wishlist-btn"
-                            data-game-id="{{ $game['gameID'] }}"
+                            data-cheapshark-id="{{ $game['gameID'] }}"
                             data-title="{{ $game['title'] }}"
                             data-thumb="{{ $game['thumb'] }}"
                             data-price="{{ $game['salePrice'] }}"
-                            onclick="event.preventDefault(); addToWishlist(this)">
+                            onclick="event.preventDefault(); event.stopPropagation(); addToWishlist(this)">
                             <x-heart-btn />
                         </button>
                         @if (!empty($game['storeID']))

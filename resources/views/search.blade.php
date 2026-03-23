@@ -22,30 +22,33 @@
                             }"
                         alt="{{ $game['title'] }}">
                     <div class="result-info">
-                        <h2 class="result-title">{{ $game['title'] }}</h2>
-                        
-                        @if ((float) $game['salePrice'] < (float) $game['normalPrice'])
-                        <div class="result-pricing">
-                            <div class="catalog-discount-badge">-{{ $savings }}%</div>
-                            <div class="original-price">${{ $game['normalPrice'] }}</div>
-                            <div class="sale-price">${{ $game['salePrice'] }}</div>
-                            <button class="wishlist-btn"
-                                data-game-id="{{ $game['gameID'] }}"
-                                data-title="{{ $game['title'] }}"
-                                data-thumb="{{ $game['thumb'] }}"
-                                data-price="{{ $game['salePrice'] }}"
-                                onclick="event.preventDefault(); addToWishlist(this)">
-                                <x-heart-btn />
-                            </button>
+                        <div class="result-main">
+                            <h2 class="result-title">{{ $game['title'] }}</h2>
+
+                            @if ((float) $game['salePrice'] < (float) $game['normalPrice'])
+                            <div class="result-pricing">
+                                <div class="catalog-discount-badge">-{{ $savings }}%</div>
+                                <div class="original-price">${{ $game['normalPrice'] }}</div>
+                                <div class="sale-price">${{ $game['salePrice'] }}</div>
+                            </div>
+                            @else
+                                <div class="sale-price">${{ $game['cheapest_price'] }}</div>
+                            @endif
+                            @if (!empty($game['storeID']))
+                                    <img class="result-store-logo" src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
+                                        style="width: 35px; height: auto;" alt="{{ $storeName }}"
+                                        onerror="this.style.display='none'">
+                            @endif
                         </div>
-                        @else
-                            <div class="sale-price">${{ $game['cheapest_price'] }}</div>
-                        @endif
-                        @if (!empty($game['storeID']))
-                                <img class="result-store-logo" src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
-                                    style="width: 35px; height: auto;" alt="{{ $storeName }}"
-                                    onerror="this.style.display='none'">
-                        @endif
+
+                        <button class="wishlist-btn result-wishlist-btn"
+                            data-game-id="{{ $game->id }}"
+                            data-title="{{ $game['title'] }}"
+                            data-thumb="{{ $game['thumb'] }}"
+                            data-price="{{ $game['salePrice'] }}"
+                            onclick="event.preventDefault(); event.stopPropagation(); addToWishlist(this)">
+                            <x-heart-btn />
+                        </button>
                     </div>
                 </a>
             @endforeach

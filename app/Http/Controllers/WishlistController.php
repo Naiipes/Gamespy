@@ -9,6 +9,22 @@ class WishlistController extends Controller
 {
     public function store(Request $request)
     {
+        if (!auth()->check()) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        if (!$request->has('game_id') && $request->has('cheapshark_id')) {
+            $game = \App\Models\Game::updateOrCreate(
+                ['cheapshark_id' => $request->cheapshark_id],
+                [
+                    'title'          => $request->input('title', 'Unknown'),
+                    'thumb'          => $request->input('thumb', ''),
+                    'cheapest_price' => $request->input('target_price', 0),
+                ]
+            );
+            $request->merge(['game_id' => $game->id]);
+        }
+
         $validated = $request->validate([
             'game_id' => ['required', 'integer', 'exists:games,id'],
             'target_price' => ['required', 'numeric', 'min:0'],
@@ -19,7 +35,7 @@ class WishlistController extends Controller
             ->exists();
 
         if ($alreadyExists) {
-            return response()->noContent(409);
+            return response()->json(['game_id' => $validated['game_id']], 409);
         }
 
         $currentCount = auth()->user()->wishlists()->count();
@@ -33,7 +49,7 @@ class WishlistController extends Controller
             "target_price" => $validated['target_price']
         ]);
 
-        return response()->noContent(201);
+        return response()->json(['game_id' => $validated['game_id']], 201);
     }
 
     public function index()
@@ -56,6 +72,23 @@ class WishlistController extends Controller
         }
 
         return view('wishlist', compact('wishlists'));
+    }
+
+    public function gameIds()
+    {
+        if (!auth()->check()) {
+            return response()->json([]);
+        }
+
+        $ids = auth()->user()->wishlists()
+            ->with('game:id,cheapshark_id')
+            ->get()
+            ->map(fn ($w) => [
+                'game_id'      => $w->game_id,
+                'cheapshark_id'=> $w->game?->cheapshark_id,
+            ]);
+
+        return response()->json($ids);
     }
 
     public function deleteGame(Request $request, $game_id)
