@@ -1,6 +1,8 @@
 async function removeFromWishlist(btn) 
 {
     const gameId = btn.dataset.gameId;
+    const wishlistResults = document.getElementById("wishlist-results");
+    const emptyMessage = document.getElementById("wishlist-empty-message");
     const csrfToken = document
         .querySelector('meta[name="csrf-token"]')
         .getAttribute("content");
@@ -11,6 +13,15 @@ async function removeFromWishlist(btn)
     });
 
     if (response.ok) {
-        btn.closest(".result-card").remove();
+        const card = btn.closest(".result-card");
+
+        if (card) {
+            card.remove();
+        }
+
+        const hasRemainingCards = wishlistResults?.querySelector(".result-card");
+        if (!hasRemainingCards && emptyMessage) {
+            emptyMessage.hidden = false;
+        }
     }
 }

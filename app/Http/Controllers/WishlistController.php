@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Wishlist;
+use App\Services\CheapSharkService;
 
 class WishlistController extends Controller
 {
@@ -53,7 +54,7 @@ class WishlistController extends Controller
         return response()->json(['game_id' => $validated['game_id']], 201);
     }
 
-    public function index()
+    public function index(CheapSharkService $service)
     {
         if (!auth()->check()) {
             if (request()->wantsJson()) {
@@ -67,6 +68,32 @@ class WishlistController extends Controller
             ->wishlists()
             ->with("game")
             ->get();
+
+        $wishlists->each(function ($wishlist) use ($service) {
+            $game = $wishlist->game;
+
+            if (!$game || !$game->cheapshark_id) {
+                return;
+            }
+
+            $dealData = $service->deals($game->cheapshark_id);
+            $bestDeal = collect($dealData["deals"] ?? [])
+                ->sortBy(fn ($deal) => (float) ($deal["price"] ?? INF))
+                ->first();
+
+            if (!$bestDeal) {
+                $game->salePrice = $game->cheapest_price;
+                $game->normalPrice = null;
+                return;
+            }
+
+            $game->salePrice = $bestDeal["price"] ?? $game->cheapest_price;
+            $game->normalPrice = $bestDeal["retailPrice"] ?? null;
+            $game->savings = $bestDeal["savings"] ?? null;
+            $game->storeID = $bestDeal["storeID"] ?? null;
+            $game->dealID = $bestDeal["dealID"] ?? null;
+            $game->cheapest_price = $game->salePrice;
+        });
 
         if (request()->wantsJson()) {
             return response()->json($wishlists);
@@ -142,3 +169,4 @@ class WishlistController extends Controller
     }
 
 }
+
