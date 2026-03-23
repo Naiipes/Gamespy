@@ -1,14 +1,15 @@
 @extends('layout.app')
 
 @section('content')
-    <div class="wishlist-wrapper">
         @guest
-            <a class="wishlist-message" href="{{ route('login') }}">Please log in to view your wishlist</a>
+            <a class="guest-wishlist-message" href="{{ route('login') }}">Please log in to view your wishlist</a>
         @endguest
         
         @auth
-            <p>Wishlist</p>
+            <div class="wishlist-wrapper">
+                <h1>USER'S WISHLIST</h1>
+
+            </div>
         @endauth
-    </div>
 
 @endsection

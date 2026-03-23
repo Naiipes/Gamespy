@@ -18,7 +18,6 @@
                         $savings = round(floatval($game['savings']));
                         $storeName = $stores[$game['storeID']];
                     @endphp
-
                     <a class="carousel-slide {{ $game === 0 ? 'current-slide' : '' }}"
                         data-title="{{ $game['title'] ?? 'Unknown title' }}"
                         href="https://www.cheapshark.com/redirect?dealID={{ $game['dealID'] }}" target="_blank">
@@ -36,11 +35,20 @@
 
                         <div class="slide-title">{{ $game['title'] }}</div>
 
+
                         <div class="slide-info-bar">
                             <div class="slide-pricing">
                                 <div class="discount-badge">-{{ $savings }}%</div>
                                 <div class="original-price">${{ $game['normalPrice'] }}</div>
                                 <div class="sale-price">${{ $game['salePrice'] }}</div>
+                                <button class="wishlist-btn"
+                                    data-game-id="{{ $game['gameID'] }}"
+                                    data-title="{{ $game['title'] }}"
+                                    data-thumb="{{ $game['thumb'] }}"
+                                    data-price="{{ $game['salePrice'] }}"
+                                    onclick="event.preventDefault(); addToWishlist(this)">
+                                    <x-heart-btn />
+                                </button>
                             </div>
                             @if (!empty($game['storeID']))
                                 <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
@@ -84,12 +92,20 @@
                             }"
                         alt="{{ $game['title'] }}">
 
-
-                    <div class="catalog-item-title">{{ $game['title'] }} </div>
+                        <div class="catalog-item-title">{{ $game['title'] }}</div>
                     <div class="catalog-item-pricing">
                         <div class="catalog-discount-badge">-{{ $savings }}%</div>
                         <div class="catalog-original-price">${{ $game['normalPrice'] }}</div>
-                        <div class="catalog-sale-price">${{ $game['salePrice'] }}</div>
+                        <div class="catalog-sale-price">${{ $game['salePrice'] }}
+                        </div>
+                        <button class="wishlist-btn"
+                            data-game-id="{{ $game['gameID'] }}"
+                            data-title="{{ $game['title'] }}"
+                            data-thumb="{{ $game['thumb'] }}"
+                            data-price="{{ $game['salePrice'] }}"
+                            onclick="event.preventDefault(); addToWishlist(this)">
+                            <x-heart-btn />
+                        </button>
                         @if (!empty($game['storeID']))
                             <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
                                 style="width: 24px; height: auto; margin-left: auto;" alt="{{ $storeName }}"

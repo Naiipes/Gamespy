@@ -23,11 +23,20 @@
                         alt="{{ $game['title'] }}">
                     <div class="result-info">
                         <h2 class="result-title">{{ $game['title'] }}</h2>
+                        
                         @if ((float) $game['salePrice'] < (float) $game['normalPrice'])
                         <div class="result-pricing">
                             <div class="catalog-discount-badge">-{{ $savings }}%</div>
                             <div class="original-price">${{ $game['normalPrice'] }}</div>
                             <div class="sale-price">${{ $game['salePrice'] }}</div>
+                            <button class="wishlist-btn"
+                                data-game-id="{{ $game['gameID'] }}"
+                                data-title="{{ $game['title'] }}"
+                                data-thumb="{{ $game['thumb'] }}"
+                                data-price="{{ $game['salePrice'] }}"
+                                onclick="event.preventDefault(); addToWishlist(this)">
+                                <x-heart-btn />
+                            </button>
                         </div>
                         @else
                             <div class="sale-price">${{ $game['cheapest_price'] }}</div>

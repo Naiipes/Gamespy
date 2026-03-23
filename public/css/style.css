@@ -91,6 +91,22 @@ li a:hover {
     background-color: #3a6fa5;
 }
 
+.logout-btn {
+    font-size: 1rem;
+    padding: 8px 8px;
+    border: none;
+    border-radius: 4px;
+    background-color: #4481b8;
+    color: #ffffff;
+    font-weight: bold;
+    margin-left: 1.5rem;
+}
+
+.logout-btn:hover {
+    background-color: #3a6fa5;
+    cursor: pointer;
+}
+
 footer p {
     color: #a3a3a3;
     text-align: center;
@@ -551,7 +567,7 @@ footer {
 }
 
 .result-card {
-    width: 700px;
+    width: 800px;
     height: 140px;
     margin: 15px 0;
     background-color: #262626;
@@ -619,13 +635,25 @@ footer {
 
 /* Wishlist Start */
 
-.wishlist-container {
-    max-width: 1200px;
-    margin: 100px auto 20px;
-    padding: 0 20px;
+.wishlist-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
 }
 
-.wishlist-message {
+.wishlist-btn svg path {
+    stroke: #a3a3a3;
+}
+
+.wishlist-btn:hover svg path {
+    stroke: #ff4d4d;
+    fill: #ff4d4d;
+}
+
+.guest-wishlist-message {
+    max-width: 50%;
+    margin: 0 auto;
     text-decoration: none;
     font-size: 2rem;
     font-weight: bold;
@@ -633,12 +661,17 @@ footer {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px;
+    padding: 30px;
     background-color: #262626c3;
 }
 
-.wishlist-message:hover {
+.guest-wishlist-message:hover {
     background-color: #3f3f46c3;
+}
+
+.wishlist-wrapper {
+    margin: 30px auto;
+    background-color: #262626;
 }
 
 /* Wishlist End */
