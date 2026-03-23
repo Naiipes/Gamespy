@@ -111,4 +111,34 @@ class WishlistController extends Controller
         ]);
     }
 
+    public function updateTargetPrice(Request $request, $game_id)
+    {
+        if (!auth()->check()) {
+            return response()->json(['message' => 'Unauthenticated'], 401);
+        }
+
+        $validated = $request->validate([
+            'target_price' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $wishlist = Wishlist::where('user_id', auth()->id())
+            ->where('game_id', $game_id)
+            ->first();
+
+        if (!$wishlist) {
+            return response()->json([
+                'message' => 'Game not found in wishlist'
+            ], 404);
+        }
+
+        $wishlist->target_price = $validated['target_price'];
+        $wishlist->save();
+
+        return response()->json([
+            'game_id' => $wishlist->game_id,
+            'target_price' => $wishlist->target_price,
+            'message' => 'Target price updated'
+        ]);
+    }
+
 }

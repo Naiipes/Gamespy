@@ -57,6 +57,7 @@ Route::get("/api/game/{id}/deals",[GameDealController::class,"show"]);
 Route::post('/wishlist',[WishlistController::class,'store']);
 Route::get('/wishlist',[WishlistController::class,'index'])->name('wishlist');
 Route::get('/api/wishlist/ids',[WishlistController::class,'gameIds']);
+Route::patch('/wishlist/game/{game_id}/target-price',[WishlistController::class,'updateTargetPrice']);
 Route::delete('/wishlist/game/{game_id}',[WishlistController::class,'deleteGame']);
 Route::middleware('auth')->group(function () {
     Route::get('/notifications', function () {
