@@ -15,8 +15,8 @@
 
                 @foreach ($popularGames as  $game)
                     @php
-                        $savings = round(floatval($game['savings']));
-                        $storeName = $stores[$game['storeID']];
+                        $savings = round(floatval($game['savings'] ?? 0));
+                        $storeName = $stores[$game['storeID']] ?? 'View Deal';
                     @endphp
                     <a class="carousel-slide {{ $game === 0 ? 'current-slide' : '' }}"
                         data-title="{{ $game['title'] ?? 'Unknown title' }}"

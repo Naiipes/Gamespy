@@ -37,6 +37,7 @@ class GameSearchController extends Controller
                     'title' => $game['title'],
                     'thumb' => $game['thumb'],
                     'cheapest_price' => $game['salePrice'],
+                    'steamAppID' => $game['steamAppID'] ?? null,
                 ],
             );
 

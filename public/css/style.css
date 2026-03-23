@@ -672,13 +672,11 @@ footer {
     fill: #ff4d4d;
 }
 
-/* Wishlist追加済み → 赤く維持 */
 .wishlist-btn.in-wishlist svg path {
     stroke: #ff4d4d;
     fill: #ff4d4d;
 }
 
-/* 追加済みをホバー → 薄くして「削除できる」と示唆 */
 .wishlist-btn.in-wishlist:hover svg path {
     stroke: #ff4d4d;
     fill: #ff4d4d;
@@ -696,16 +694,19 @@ footer {
     flex-direction: column;
     align-items: center;
     padding: 30px;
-    background-color: #262626c3;
 }
 
 .guest-wishlist-message:hover {
-    background-color: #3f3f46c3;
+    text-decoration: underline;
+}
+
+.wishlist-empty {
+    padding: 30px;
+    text-align: center;
 }
 
 .wishlist-wrapper {
     margin: 30px auto;
-    background-color: #262626;
 }
 
 /* Wishlist End */
