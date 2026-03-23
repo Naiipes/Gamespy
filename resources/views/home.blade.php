@@ -43,6 +43,7 @@
                                 <div class="sale-price">${{ $game['salePrice'] }}</div>
                                 <button class="wishlist-btn"
                                     data-cheapshark-id="{{ $game['gameID'] }}"
+                                    data-steam-app-id="{{ $game['steamAppID'] ?? '' }}"
                                     data-title="{{ $game['title'] }}"
                                     data-thumb="{{ $game['thumb'] }}"
                                     data-price="{{ $game['salePrice'] }}"
@@ -100,6 +101,7 @@
                         </div>
                         <button class="wishlist-btn"
                             data-cheapshark-id="{{ $game['gameID'] }}"
+                            data-steam-app-id="{{ $game['steamAppID'] ?? '' }}"
                             data-title="{{ $game['title'] }}"
                             data-thumb="{{ $game['thumb'] }}"
                             data-price="{{ $game['salePrice'] }}"

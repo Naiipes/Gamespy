@@ -20,6 +20,7 @@ class WishlistController extends Controller
                     'title'          => $request->input('title', 'Unknown'),
                     'thumb'          => $request->input('thumb', ''),
                     'cheapest_price' => $request->input('target_price', 0),
+                    'steamAppID'     => $request->input('steamAppID'),
                 ]
             );
             $request->merge(['game_id' => $game->id]);

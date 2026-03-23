@@ -10,7 +10,8 @@ class Game extends Model
         "cheapshark_id",
         "title",
         "thumb",
-        "cheapest_price"
+        "cheapest_price",
+        "steamAppID"
     ];
 
     public function wishlists()

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Game;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -167,6 +168,8 @@ class GameDiscoveryService
     {
         $deals = $this->recommend(self::RECOMMENDATION_TARGET_SIZE);
 
+        $this->syncGamesTable($deals);
+
         $steamGenres = $this->fetchSteamGenres($deals);
 
         $genres = [
@@ -193,6 +196,27 @@ class GameDiscoveryService
         $this->saveCache('recommend', $deals->take(20)->values());
 
         $this->saveCache('aaa', $this->popularAAA());
+    }
+
+    private function syncGamesTable(Collection $deals): void
+    {
+        foreach ($deals as $deal) {
+            $cheapsharkId = $deal['gameID'] ?? null;
+
+            if (!$cheapsharkId) {
+                continue;
+            }
+
+            Game::updateOrCreate(
+                ['cheapshark_id' => (string) $cheapsharkId],
+                [
+                    'title' => $deal['title'] ?? $deal['gameName'] ?? 'Unknown',
+                    'thumb' => $deal['thumb'] ?? null,
+                    'cheapest_price' => $deal['salePrice'] ?? $deal['cheapest'] ?? null,
+                    'steamAppID' => $deal['steamAppID'] ?? null,
+                ],
+            );
+        }
     }
 
     private function saveCache(string $type, Collection $data): void

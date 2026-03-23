@@ -105,6 +105,7 @@
 
         const gameId      = btn.dataset.gameId;
         const cheapsharkId = btn.dataset.cheapsharkId;
+        const steamAppId  = btn.dataset.steamAppId;
         const price       = parseFloat(btn.dataset.price || '0');
 
         // if already in wishlist, send delete request
@@ -129,6 +130,7 @@
         } else if (cheapsharkId) {
             body = {
                 cheapshark_id: cheapsharkId,
+                steamAppID:    steamAppId || null,
                 title:         btn.dataset.title || '',
                 thumb:         btn.dataset.thumb || '',
                 target_price:  price
