@@ -19,6 +19,9 @@ class PriceCheckerService
 
         foreach ($wishlists as $wishlist)
         {
+            if (!$wishlist->notifications_enabled) {
+                continue;
+            }
 
             $game = $wishlist->game;
 
@@ -51,7 +54,11 @@ class PriceCheckerService
             ->where('is_read', false)
             ->exists();
 
-            if ($wishlist->target_price && $currentPrice <= $wishlist->target_price && !$alreadyNotified)
+            $isTargetHit = $wishlist->use_target_price
+                ? ($wishlist->target_price && $currentPrice <= $wishlist->target_price)
+                : false;
+
+            if ($isTargetHit && !$alreadyNotified)
             {
 
                 Notification::create([
@@ -63,13 +70,15 @@ class PriceCheckerService
                     "is_read"=>false
                 ]);
 
-                Mail::to($wishlist->user->email)
-                    ->send(new PriceDropMail(
-                        $game->title,
-                        $currentPrice,
-                        $wishlist->target_price,
-                        $storeName
-                    ));
+                if ($wishlist->notify_by_email) {
+                    Mail::to($wishlist->user->email)
+                        ->send(new PriceDropMail(
+                            $game->title,
+                            $currentPrice,
+                            $wishlist->target_price,
+                            $storeName
+                        ));
+                }
             }
 
         }

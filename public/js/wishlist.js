@@ -1,5 +1,4 @@
-async function removeFromWishlist(btn) 
-{
+async function removeFromWishlist(btn) {
     const gameId = btn.dataset.gameId;
     const wishlistResults = document.getElementById("wishlist-results");
     const emptyMessage = document.getElementById("wishlist-empty-message");
@@ -19,15 +18,15 @@ async function removeFromWishlist(btn)
             card.remove();
         }
 
-        const hasRemainingCards = wishlistResults?.querySelector(".result-card");
+        const hasRemainingCards =
+            wishlistResults?.querySelector(".result-card");
         if (!hasRemainingCards && emptyMessage) {
             emptyMessage.hidden = false;
         }
     }
 }
 
-function closeNotificationDropdowns(exceptCard = null) 
-{
+function closeNotificationDropdowns(exceptCard = null) {
     document.querySelectorAll(".notify-card").forEach((notifyCard) => {
         const dropdown = notifyCard.querySelector(".notification-dropdown");
         const toggle = notifyCard.querySelector("[data-notify-toggle]");
@@ -40,7 +39,10 @@ function closeNotificationDropdowns(exceptCard = null)
         }
 
         if (toggle) {
-            toggle.setAttribute("aria-expanded", shouldStayOpen ? "true" : "false");
+            toggle.setAttribute(
+                "aria-expanded",
+                shouldStayOpen ? "true" : "false",
+            );
         }
     });
 }
@@ -53,8 +55,7 @@ function openWishlistCard(card) {
     }
 }
 
-function updateNotificationDropdownState(dropdown)
-{
+function updateNotificationDropdownState(dropdown) {
     const enabledInput = dropdown?.querySelector(".notify-enabled-input");
     const emailInput = dropdown?.querySelector(".notify-email-input");
     const targetToggle = dropdown?.querySelector(".notify-target-toggle");
@@ -75,8 +76,7 @@ function updateNotificationDropdownState(dropdown)
     priceInput.disabled = !enabledInput.checked || !targetToggle.checked;
 }
 
-function saveNotificationSettings(btn) 
-{
+async function saveNotificationSettings(btn) {
     const dropdown = btn.closest(".notification-dropdown");
     const notifyCard = btn.closest(".notify-card");
     const enabledInput = dropdown?.querySelector(".notify-enabled-input");
@@ -85,11 +85,31 @@ function saveNotificationSettings(btn)
     const priceInput = dropdown?.querySelector(".notify-price-input");
     const feedback = dropdown?.querySelector(".notify-feedback");
 
-    if (!dropdown || !enabledInput || !emailInput || !targetToggle || !priceInput) {
+    if (
+        !dropdown ||
+        !enabledInput ||
+        !emailInput ||
+        !targetToggle ||
+        !priceInput
+    ) {
         return;
     }
 
-    const targetPrice = targetToggle.checked ? parseFloat(priceInput.value || "0") : 0;
+    const targetPrice = targetToggle.checked
+        ? parseFloat(priceInput.value || "0")
+        : 0;
+    const gameId = btn.dataset.gameId;
+    const csrfToken = document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute("content");
+
+    if (!gameId || !csrfToken) {
+        if (feedback) {
+            feedback.hidden = false;
+            feedback.textContent = "Unable to save settings.";
+        }
+        return;
+    }
 
     if (targetToggle.checked && (targetPrice > 1000 || targetPrice < 0)) {
         if (feedback) {
@@ -101,7 +121,37 @@ function saveNotificationSettings(btn)
 
     if (feedback) {
         feedback.hidden = false;
-        feedback.textContent = "Settings saved.";
+        feedback.textContent = "Saving...";
+    }
+
+    try {
+        const response = await fetch(`/wishlist/game/${gameId}/target-price`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken,
+                Accept: "application/json",
+            },
+            body: JSON.stringify({
+                notifications_enabled: enabledInput.checked,
+                notify_by_email: emailInput.checked,
+                use_target_price: targetToggle.checked,
+                target_price: targetPrice,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Request failed");
+        }
+
+        if (feedback) {
+            feedback.textContent = "Settings saved.";
+        }
+    } catch (_error) {
+        if (feedback) {
+            feedback.textContent = "Could not save settings.";
+        }
+        return;
     }
 
     const toggle = notifyCard?.querySelector(".notify-btn");
@@ -123,19 +173,23 @@ function initWishlistNotificationControls() {
             event.stopPropagation();
 
             const notifyCard = toggle.closest(".notify-card");
-            const dropdown = notifyCard?.querySelector(".notification-dropdown");
+            const dropdown = notifyCard?.querySelector(
+                ".notification-dropdown",
+            );
             const isOpening = dropdown?.hidden ?? false;
 
             closeNotificationDropdowns(isOpening ? notifyCard : null);
         });
     });
 
-    document.querySelectorAll(".notify-enabled-input, .notify-target-toggle").forEach((input) => {
-        input.addEventListener("change", () => {
-            const dropdown = input.closest(".notification-dropdown");
-            updateNotificationDropdownState(dropdown);
+    document
+        .querySelectorAll(".notify-enabled-input, .notify-target-toggle")
+        .forEach((input) => {
+            input.addEventListener("change", () => {
+                const dropdown = input.closest(".notification-dropdown");
+                updateNotificationDropdownState(dropdown);
+            });
         });
-    });
 
     document.querySelectorAll(".notify-save-btn").forEach((btn) => {
         btn.addEventListener("click", (event) => {

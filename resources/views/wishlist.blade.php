@@ -20,6 +20,18 @@
                         $savings = $isDiscounted && (float) $normalPrice > 0
                             ? round((1 - ((float) $salePrice / (float) $normalPrice)) * 100) : 0;
                         $storeName = $stores[$item->game->storeID ?? ''] ?? 'View Deal';
+                       
+                        $notificationsEnabled = isset($item->notifications_enabled)
+                            ? (bool) $item->notifications_enabled
+                            : (float) $item->target_price > 0;
+                        $notifyByEmail = isset($item->notify_by_email)
+                            ? (bool) $item->notify_by_email
+                            : false;
+                        $useTargetPrice = isset($item->use_target_price)
+                            ? (bool) $item->use_target_price
+                            : (float) $item->target_price > 0;
+
+                    
                     @endphp
 
                     <div class="result-card"
@@ -43,7 +55,7 @@
 
                                     <div class="result-actions">
                                         <div class="notify-card">
-                                            <button class="result-action-btn notify-btn{{ (float) $item->target_price > 0 ? ' notifications-enabled' : '' }}"
+                                            <button class="result-action-btn notify-btn{{ $notificationsEnabled ? ' notifications-enabled' : '' }}"
                                                 type="button"
                                                 aria-expanded="false"
                                                 aria-controls="notify-menu-{{ $item->game->id }}"
@@ -57,20 +69,21 @@
                                                 <label class="notify-toggle-row notify-toggle-inline">
                                                     <span>Receive notifications when this game goes on sale</span>
                                                     <input class="notify-enabled-input" type="checkbox"
-                                                        @checked((float) $item->target_price > 0)>
+                                                        @checked($notificationsEnabled)>
                                                 </label>
 
                                                 <label class="notify-toggle-row notify-toggle-inline">
                                                     <span>Notify me by email</span>
                                                     <input class="notify-email-input" type="checkbox"
-                                                        @disabled((float) $item->target_price <= 0)>
+                                                        @checked($notifyByEmail)
+                                                        @disabled(!$notificationsEnabled)>
                                                 </label>
 
                                                 <label class="notify-toggle-row notify-toggle-inline">
                                                     <span>Use a target price</span>
                                                     <input class="notify-target-toggle" type="checkbox"
-                                                        @checked((float) $item->target_price > 0)
-                                                        @disabled((float) $item->target_price <= 0)>
+                                                        @checked($useTargetPrice)
+                                                        @disabled(!$notificationsEnabled)>
                                                 </label>
 
                                                 <label class="notify-field">
@@ -78,8 +91,8 @@
                                                     <input class="notify-price-input"
                                                         type="number"
                                                         min="0"
-                                                        value="{{ (float) $item->target_price > 0 ? $item->target_price : '' }}"
-                                                        @disabled((float) $item->target_price <= 0)>
+                                                        value="{{ $useTargetPrice ? $item->target_price : '' }}"
+                                                        @disabled(!$notificationsEnabled || !$useTargetPrice)>
                                                 </label>
 
                                                 <button class="notify-save-btn"

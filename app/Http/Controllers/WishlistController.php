@@ -48,7 +48,10 @@ class WishlistController extends Controller
         Wishlist::create([
             "user_id" => auth()->id(),
             "game_id" => $validated['game_id'],
-            "target_price" => $validated['target_price']
+            "target_price" => $validated['target_price'],
+            "notifications_enabled" => (float) $validated['target_price'] > 0,
+            "notify_by_email" => (float) $validated['target_price'] > 0,
+            "use_target_price" => (float) $validated['target_price'] > 0,
         ]);
 
         return response()->json(['game_id' => $validated['game_id']], 201);
@@ -145,7 +148,10 @@ class WishlistController extends Controller
         }
 
         $validated = $request->validate([
-            'target_price' => ['required', 'numeric', 'min:0'],
+            'notifications_enabled' => ['required', 'boolean'],
+            'notify_by_email' => ['required', 'boolean'],
+            'use_target_price' => ['required', 'boolean'],
+            'target_price' => ['nullable', 'numeric', 'min:0', 'max:1000'],
         ]);
 
         $wishlist = Wishlist::where('user_id', auth()->id())
@@ -158,12 +164,23 @@ class WishlistController extends Controller
             ], 404);
         }
 
-        $wishlist->target_price = $validated['target_price'];
+        $notificationsEnabled = (bool) $validated['notifications_enabled'];
+        $notifyByEmail = $notificationsEnabled && (bool) $validated['notify_by_email'];
+        $useTargetPrice = $notificationsEnabled && (bool) $validated['use_target_price'];
+        $targetPrice = $useTargetPrice ? (float) ($validated['target_price'] ?? 0) : 0;
+
+        $wishlist->notifications_enabled = $notificationsEnabled;
+        $wishlist->notify_by_email = $notifyByEmail;
+        $wishlist->use_target_price = $useTargetPrice;
+        $wishlist->target_price = $targetPrice;
         $wishlist->save();
 
         return response()->json([
             'game_id' => $wishlist->game_id,
             'target_price' => $wishlist->target_price,
+            'notifications_enabled' => (bool) $wishlist->notifications_enabled,
+            'notify_by_email' => (bool) $wishlist->notify_by_email,
+            'use_target_price' => (bool) $wishlist->use_target_price,
             'message' => 'Target price updated'
         ]);
     }
