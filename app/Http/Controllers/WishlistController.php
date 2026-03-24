@@ -20,7 +20,7 @@ class WishlistController extends Controller
                 [
                     'title'          => $request->input('title', 'Unknown'),
                     'thumb'          => $request->input('thumb', ''),
-                    'cheapest_price' => $request->input('target_price', 0),
+                    'cheapest_price' => $request->input('current_price', 0),
                     'steamAppID'     => $request->input('steamAppID'),
                 ]
             );
@@ -169,4 +169,3 @@ class WishlistController extends Controller
     }
 
 }
-

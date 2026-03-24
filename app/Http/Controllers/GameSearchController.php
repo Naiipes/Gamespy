@@ -28,9 +28,18 @@ class GameSearchController extends Controller
             return view('search', ['games' => []]);
         }
 
+        $lowestDeals = collect($results)
+            ->groupBy(fn ($game) => $game['gameID'] ?? $game['internalName'] ?? $game['title'])
+            ->map(function ($deals) {
+                return $deals
+                    ->sortBy(fn ($deal) => (float) ($deal['salePrice'] ?? INF))
+                    ->first();
+            })
+            ->values();
+
         $games = [];
 
-        foreach ($results as $game) {
+        foreach ($lowestDeals as $game) {
             $record = Game::updateOrCreate(
                 ['cheapshark_id' => $game['gameID']],
                 [

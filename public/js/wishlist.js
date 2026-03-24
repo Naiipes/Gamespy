@@ -25,3 +25,180 @@ async function removeFromWishlist(btn)
         }
     }
 }
+
+function closeNotificationDropdowns(exceptCard = null) 
+{
+    document.querySelectorAll(".notify-card").forEach((notifyCard) => {
+        const dropdown = notifyCard.querySelector(".notification-dropdown");
+        const toggle = notifyCard.querySelector("[data-notify-toggle]");
+        const shouldStayOpen = exceptCard && notifyCard === exceptCard;
+
+        notifyCard.classList.toggle("is-open", shouldStayOpen);
+
+        if (dropdown) {
+            dropdown.hidden = !shouldStayOpen;
+        }
+
+        if (toggle) {
+            toggle.setAttribute("aria-expanded", shouldStayOpen ? "true" : "false");
+        }
+    });
+}
+
+function openWishlistCard(card) {
+    const url = card?.dataset.dealUrl;
+
+    if (url) {
+        window.open(url, "_blank", "noopener");
+    }
+}
+
+function updateNotificationDropdownState(dropdown)
+{
+    const enabledInput = dropdown?.querySelector(".notify-enabled-input");
+    const emailInput = dropdown?.querySelector(".notify-email-input");
+    const targetToggle = dropdown?.querySelector(".notify-target-toggle");
+    const priceInput = dropdown?.querySelector(".notify-price-input");
+
+    if (!enabledInput || !emailInput || !targetToggle || !priceInput) {
+        return;
+    }
+
+    emailInput.disabled = !enabledInput.checked;
+    targetToggle.disabled = !enabledInput.checked;
+
+    if (!enabledInput.checked) {
+        emailInput.checked = false;
+        targetToggle.checked = false;
+    }
+
+    priceInput.disabled = !enabledInput.checked || !targetToggle.checked;
+}
+
+function saveNotificationSettings(btn) 
+{
+    const dropdown = btn.closest(".notification-dropdown");
+    const notifyCard = btn.closest(".notify-card");
+    const enabledInput = dropdown?.querySelector(".notify-enabled-input");
+    const emailInput = dropdown?.querySelector(".notify-email-input");
+    const targetToggle = dropdown?.querySelector(".notify-target-toggle");
+    const priceInput = dropdown?.querySelector(".notify-price-input");
+    const feedback = dropdown?.querySelector(".notify-feedback");
+
+    if (!dropdown || !enabledInput || !emailInput || !targetToggle || !priceInput) {
+        return;
+    }
+
+    const targetPrice = targetToggle.checked ? parseFloat(priceInput.value || "0") : 0;
+
+    if (targetToggle.checked && (targetPrice > 1000 || targetPrice < 0)) {
+        if (feedback) {
+            feedback.hidden = false;
+            feedback.textContent = "Enter a valid target price.";
+        }
+        return;
+    }
+
+    if (feedback) {
+        feedback.hidden = false;
+        feedback.textContent = "Settings saved.";
+    }
+
+    const toggle = notifyCard?.querySelector(".notify-btn");
+    if (toggle) {
+        toggle.classList.toggle("notifications-enabled", enabledInput.checked);
+    }
+
+    setTimeout(() => {
+        if (feedback) {
+            feedback.hidden = true;
+        }
+    }, 2000);
+}
+
+function initWishlistNotificationControls() {
+    document.querySelectorAll("[data-notify-toggle]").forEach((toggle) => {
+        toggle.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const notifyCard = toggle.closest(".notify-card");
+            const dropdown = notifyCard?.querySelector(".notification-dropdown");
+            const isOpening = dropdown?.hidden ?? false;
+
+            closeNotificationDropdowns(isOpening ? notifyCard : null);
+        });
+    });
+
+    document.querySelectorAll(".notify-enabled-input, .notify-target-toggle").forEach((input) => {
+        input.addEventListener("change", () => {
+            const dropdown = input.closest(".notification-dropdown");
+            updateNotificationDropdownState(dropdown);
+        });
+    });
+
+    document.querySelectorAll(".notify-save-btn").forEach((btn) => {
+        btn.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            saveNotificationSettings(btn);
+        });
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!event.target.closest(".notify-card")) {
+            closeNotificationDropdowns();
+        }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            closeNotificationDropdowns();
+        }
+    });
+
+    document.querySelectorAll(".notification-dropdown").forEach((dropdown) => {
+        updateNotificationDropdownState(dropdown);
+    });
+}
+
+function initWishlistCardLinks() {
+    document.querySelectorAll(".result-card[data-deal-url]").forEach((card) => {
+        card.addEventListener("click", (event) => {
+            if (
+                event.target.closest(".notify-card") ||
+                event.target.closest(".result-wishlist-btn")
+            ) {
+                return;
+            }
+
+            openWishlistCard(card);
+        });
+
+        card.addEventListener("keydown", (event) => {
+            if (event.key !== "Enter" && event.key !== " ") {
+                return;
+            }
+
+            if (
+                event.target.closest(".notify-card") ||
+                event.target.closest(".result-wishlist-btn")
+            ) {
+                return;
+            }
+
+            event.preventDefault();
+            openWishlistCard(card);
+        });
+    });
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+        initWishlistNotificationControls();
+        initWishlistCardLinks();
+    });
+} else {
+    initWishlistNotificationControls();
+    initWishlistCardLinks();
+}
