@@ -11,12 +11,13 @@ class GameDiscoveryService
 {
     private ?Collection $cachedDeals = null;
 
-    private const STEAM_GENRE_CACHE_TYPE = 'steam_genres';
-    private const RECOMMENDATION_TARGET_SIZE = 200;
-    private const CHEAPSHARK_PAGE_SIZE = 30;
-    private const CHEAPSHARK_EXTRA_PAGE_BUFFER = 2;
-    private const AAA_SOURCE_SIZE = 600;
-    private const AAA_TARGET_SIZE = 10;
+    private final const STEAM_GENRE_CACHE_TYPE = 'steam_genres';
+    private final const RECOMMENDATION_TARGET_SIZE = 200;
+    private final const GENRE_TARGET_SIZE = 20;
+    private final const CHEAPSHARK_PAGE_SIZE = 30;
+    private final const CHEAPSHARK_EXTRA_PAGE_BUFFER = 2;
+    private final const AAA_SOURCE_SIZE = 600;
+    private final const AAA_TARGET_SIZE = 10;
 
     private function uniqueDealKey(array $deal): ?string
     {
@@ -189,12 +190,12 @@ class GameDiscoveryService
 
 
         foreach ($genres as $g) {
-            $filtered = $this->filterByGenre($deals, $steamGenres, $g)->take(20)->values();
+            $filtered = $this->filterByGenre($deals, $steamGenres, $g)->take(self::GENRE_TARGET_SIZE)->values();
 
             $this->saveCache($g, $filtered);
         }
 
-        $this->saveCache('recommend', $deals->take(20)->values());
+        $this->saveCache('recommend', $deals->take(self::RECOMMENDATION_TARGET_SIZE)->values());
 
         $this->saveCache('aaa', $this->popularAAA());
     }
@@ -232,7 +233,7 @@ class GameDiscoveryService
         );
     }
 
-    public function genre(string $genre, int $size = 20): Collection
+    public function genre(string $genre, int $size = self::GENRE_TARGET_SIZE): Collection
     {
         $json = DB::table('game_recommendations')->where('type', strtolower($genre))->value('payload');
 
@@ -243,7 +244,7 @@ class GameDiscoveryService
         return collect(json_decode($json, true))->take($size)->values();
     }
 
-    public function cachedRecommend(int $size = 20): Collection
+    public function cachedRecommend(int $size = self::RECOMMENDATION_TARGET_SIZE): Collection
     {
         $json = DB::table('game_recommendations')->where('type', 'recommend')->value('payload');
 
@@ -254,7 +255,7 @@ class GameDiscoveryService
         return collect(json_decode($json, true))->take($size)->values();
     }
 
-    public function cachedAAA(): Collection
+    public function cachedAAA(int $size = self::AAA_SOURCE_SIZE): Collection
     {
         $json = DB::table('game_recommendations')->where('type', 'aaa')->value('payload');
 
@@ -262,6 +263,6 @@ class GameDiscoveryService
             return collect();
         }
 
-        return collect(json_decode($json, true))->values();
+        return collect(json_decode($json, true))->take($size)->values();
     }
 }
