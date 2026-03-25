@@ -15,7 +15,8 @@ class GameDiscoveryService
     private const RECOMMENDATION_TARGET_SIZE = 200;
     private const CHEAPSHARK_PAGE_SIZE = 30;
     private const CHEAPSHARK_EXTRA_PAGE_BUFFER = 2;
-    private const AAA_SOURCE_SIZE = 60;
+    private const AAA_SOURCE_SIZE = 600;
+    private const AAA_TARGET_SIZE = 10;
 
     private function uniqueDealKey(array $deal): ?string
     {
@@ -66,10 +67,10 @@ class GameDiscoveryService
         $deals = $this->recommend(self::AAA_SOURCE_SIZE);
 
         $aaa = $deals->filter(function ($deal) {
-            return ($deal['normalPrice'] ?? 0) >= 39.99 && ($deal['steamRatingCount'] ?? 0) >= 500 && ($deal['metacriticScore'] ?? 0) >= 75;
+            return ($deal['normalPrice'] ?? 0) >= 29.99 && ($deal['steamRatingCount'] ?? 0) >= 500 && ($deal['metacriticScore'] ?? 0) >= 75;
         });
 
-        return $aaa->sortByDesc('savings')->sortByDesc('dealRating')->sortBy('salePrice')->values()->take(5);
+        return $aaa->sortByDesc('savings')->sortByDesc('dealRating')->sortBy('salePrice')->values()->take(self::AAA_TARGET_SIZE);
     }
 
     private function fetchSteamGenres(Collection $deals): array
