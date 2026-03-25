@@ -11,13 +11,13 @@ class GameDiscoveryService
 {
     private ?Collection $cachedDeals = null;
 
-    private final const STEAM_GENRE_CACHE_TYPE = 'steam_genres';
-    private final const RECOMMENDATION_TARGET_SIZE = 200;
-    private final const GENRE_TARGET_SIZE = 20;
-    private final const CHEAPSHARK_PAGE_SIZE = 30;
-    private final const CHEAPSHARK_EXTRA_PAGE_BUFFER = 2;
-    private final const AAA_SOURCE_SIZE = 600;
-    private final const AAA_TARGET_SIZE = 10;
+    private const STEAM_GENRE_CACHE_TYPE = 'steam_genres';
+    private const RECOMMENDATION_TARGET_SIZE = 200;
+    private const GENRE_TARGET_SIZE = 20;
+    private const CHEAPSHARK_PAGE_SIZE = 30;
+    private const CHEAPSHARK_EXTRA_PAGE_BUFFER = 2;
+    private const AAA_SOURCE_SIZE = 600;
+    private const AAA_TARGET_SIZE = 10;
 
     private function uniqueDealKey(array $deal): ?string
     {
