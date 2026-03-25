@@ -184,8 +184,7 @@ class GameDiscoveryService
             'racing',
             'indie',
             'casual',
-            'massively multiplayer',
-            'free to play'
+            'massively multiplayer'
         ];
 
 

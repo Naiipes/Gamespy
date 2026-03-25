@@ -31,17 +31,16 @@
                     <li class="dropdown">
                         <button class="dropdown-btn">Genres<span class="arrow"><x-arrow-down/></span></button>
                         <ul class="dropdown-genres">
-                            <li><a href="">Action</a></li>
-                            <li><a href="">Adventure</a></li>
-                            <li><a href="">RPG</a></li>
-                            <li><a href="">Strategy</a></li>
-                            <li><a href="">Sports</a></li>
-                            <li><a href="">Simulation</a></li>
-                            <li><a href="">Racing</a></li>
-                            <li><a href="">Indie</a></li>
-                            <li><a href="">Casual</a></li>
-                            <li><a href="">Massively Multiplayer</a></li>
-                            <li><a href="">Free to Play</a></li>
+                            <li><a href="{{ route('genres.show', ['genre' => 'action']) }}">Action</a></li>
+                            <li><a href="{{ route('genres.show', ['genre' => 'adventure']) }}">Adventure</a></li>
+                            <li><a href="{{ route('genres.show', ['genre' => 'rpg']) }}">RPG</a></li>
+                            <li><a href="{{ route('genres.show', ['genre' => 'strategy']) }}">Strategy</a></li>
+                            <li><a href="{{ route('genres.show', ['genre' => 'sports']) }}">Sports</a></li>
+                            <li><a href="{{ route('genres.show', ['genre' => 'simulation']) }}">Simulation</a></li>
+                            <li><a href="{{ route('genres.show', ['genre' => 'racing']) }}">Racing</a></li>
+                            <li><a href="{{ route('genres.show', ['genre' => 'indie']) }}">Indie</a></li>
+                            <li><a href="{{ route('genres.show', ['genre' => 'casual']) }}">Casual</a></li>
+                            <li><a href="{{ route('genres.show', ['genre' => 'massively multiplayer']) }}">Massively Multiplayer</a></li>
                         </ul>
                     </li>
                     <li><a href="{{ route('wishlist') }}">Wishlist</a></li>

@@ -862,5 +862,18 @@ footer {
     color: #d4d4d8;
     font-size: 0.85rem;
 }
-
 /* Wishlist End */
+
+/* Genre Start */
+/* Reuses most of the catalog styles */
+
+.genre-title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+
+/* Genre End */

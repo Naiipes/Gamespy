@@ -73,6 +73,7 @@
     {{-- Carousel End --}}
 
     <div class="catalog-container">
+        <h1 class="genre-title">ALL GAMES</h1>
         <ul class="catalog-list">
             @foreach ($catalogGames as $game)
                 @php
