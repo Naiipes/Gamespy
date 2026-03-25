@@ -12,7 +12,7 @@ class GameDiscoveryService
     private ?Collection $cachedDeals = null;
 
     private const STEAM_GENRE_CACHE_TYPE = 'steam_genres';
-    private const RECOMMENDATION_TARGET_SIZE = 200;
+    private const RECOMMENDATION_TARGET_SIZE = 500;
     private const GENRE_TARGET_SIZE = 20;
     private const CHEAPSHARK_PAGE_SIZE = 30;
     private const CHEAPSHARK_EXTRA_PAGE_BUFFER = 2;
