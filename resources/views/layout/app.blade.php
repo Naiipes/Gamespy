@@ -2,6 +2,8 @@
 <html lang="en">
 
 <head>
+
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -10,7 +12,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="stylesheet" href="{{ asset('css/style.css?v=') . time() }}">
+    @php($styleVersion = @filemtime(public_path('css/style.css')) ?: time())
+    @php($appJsVersion = @filemtime(public_path('js/app.js')) ?: time())
+    <link rel="stylesheet" href="{{ asset('css/style.css?v=' . $styleVersion) }}">
     <title>Gamespy</title>
 </head>
 
@@ -65,7 +69,7 @@
         <p>&copy; 2026 Gamespy. All rights reserved.</p>
     </footer>
 
-    <script src="{{ asset('js/app.js?v=') . time() }}"></script>
+    <script src="{{ asset('js/app.js?v=' . $appJsVersion) }}"></script>
 </body>
 
 </html>
