@@ -2,8 +2,6 @@
 <html lang="en">
 
 <head>
-
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -12,9 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    @php($styleVersion = @filemtime(public_path('css/style.css')) ?: time())
-    @php($appJsVersion = @filemtime(public_path('js/app.js')) ?: time())
-    <link rel="stylesheet" href="{{ asset('css/style.css?v=' . $styleVersion) }}">
+    <link rel="stylesheet" href="{{ asset('css/style.css?v=') }}">
     <title>Gamespy</title>
 </head>
 
@@ -48,6 +44,52 @@
                         </ul>
                     </li>
                     <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
+                    
+                    @php
+                        $navbarNotification = [
+                            'type' => 'Wishlist Sale',
+                            'title' => 'Ready or Not',
+                            'message' => 'Dropped to $19.99 and matched your target price.',
+                            'thumb' => 'https://cdn.akamai.steamstatic.com/steam/apps/1144200/header.jpg',
+                            'additional_count' => 1,
+                        ];
+                    @endphp
+                    <li class="navbar-notification" id="navbar-notification">
+                        <button class="notification-btn"
+                            id="navbar-notification-toggle"
+                            type="button"
+                            aria-expanded="false"
+                            aria-controls="navbar-notification-dropdown">
+                            <x-notification-icon />
+                        </button>
+
+                        <div class="navbar-notification-dropdown"
+                            id="navbar-notification-dropdown"
+                            hidden>
+                            <div class="navbar-notification-card">
+                                <img class="navbar-notification-image"
+                                    src="{{ $navbarNotification['thumb'] }}"
+                                    alt="{{ $navbarNotification['title'] }}">
+
+                                <div class="navbar-notification-body">
+                                    <div class="navbar-notification-meta">
+                                        <span class="navbar-notification-type">{{ $navbarNotification['type'] }}</span>
+                                    </div>
+
+                                    <p class="navbar-notification-title">{{ $navbarNotification['title'] }}</p>
+                                    <p class="navbar-notification-text">{{ $navbarNotification['message'] }}</p>
+                                </div>
+                            </div>
+
+                            @if ($navbarNotification['additional_count'] > 0)
+                                <p class="navbar-notification-more">
+                                    {{ $navbarNotification['additional_count'] === 1
+                                        ? '1 more wishlisted game is on sale.'
+                                        : $navbarNotification['additional_count'] . ' more wishlisted games are on sale.' }}
+                                </p>
+                            @endif
+                        </div>
+                    </li>
                 @guest
                     <li><a class="logout-btn" href="{{ route('login') }}">Sign in</a></li>
                 @endguest
@@ -69,7 +111,7 @@
         <p>&copy; 2026 Gamespy. All rights reserved.</p>
     </footer>
 
-    <script src="{{ asset('js/app.js?v=' . $appJsVersion) }}"></script>
+    <script src="{{ asset('js/app.js?v=') . time() }}"></script>
 </body>
 
 </html>

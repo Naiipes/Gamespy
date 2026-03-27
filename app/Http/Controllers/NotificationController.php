@@ -16,7 +16,6 @@ class NotificationController extends Controller
             ->with("game")
             ->latest()
             ->get();
-
     }
 
 }

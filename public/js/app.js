@@ -119,8 +119,67 @@ async function addToWishlist(btn) {
     }
 }
 
+function closeNavbarNotificationDropdown() {
+    const notification = document.getElementById("navbar-notification");
+    const toggle = document.getElementById("navbar-notification-toggle");
+    const panelId = toggle?.getAttribute("aria-controls");
+    const panel = panelId ? document.getElementById(panelId) : null;
+
+    if (!notification || !toggle || !panel) {
+        return;
+    }
+
+    notification.classList.remove("is-open");
+    panel.hidden = true;
+    toggle.setAttribute("aria-expanded", "false");
+}
+
+function initNavbarNotificationDropdown() {
+    const notification = document.getElementById("navbar-notification");
+    const toggle = document.getElementById("navbar-notification-toggle");
+    const panelId = toggle?.getAttribute("aria-controls");
+    const panel = panelId ? document.getElementById(panelId) : null;
+
+    if (!notification || !toggle || !panel) {
+        return;
+    }
+
+    toggle.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const shouldOpen = panel.hidden;
+
+        closeNavbarNotificationDropdown();
+
+        if (!shouldOpen) {
+            return;
+        }
+
+        notification.classList.add("is-open");
+        panel.hidden = false;
+        toggle.setAttribute("aria-expanded", "true");
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!notification.contains(event.target)) {
+            closeNavbarNotificationDropdown();
+        }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            closeNavbarNotificationDropdown();
+        }
+    });
+}
+
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initWishlistState);
+    document.addEventListener("DOMContentLoaded", () => {
+        initWishlistState();
+        initNavbarNotificationDropdown();
+    });
 } else {
     initWishlistState();
+    initNavbarNotificationDropdown();
 }
