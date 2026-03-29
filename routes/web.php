@@ -6,8 +6,8 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\GameSearchController;
 use App\Http\Controllers\GameDiscoveryController;
 use App\Http\Controllers\GameDealController;
-use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\WishlistController;
 use App\Services\GameDiscoveryService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GenreController;
@@ -56,12 +56,7 @@ Route::get('/wishlist',[WishlistController::class,'index'])->name('wishlist');
 Route::get('/api/wishlist/ids',[WishlistController::class,'gameIds']);
 Route::patch('/wishlist/game/{game_id}/target-price',[WishlistController::class,'updateTargetPrice']);
 Route::delete('/wishlist/game/{game_id}',[WishlistController::class,'deleteGame']);
-Route::middleware('auth')->group(function () {
-    Route::get('/notifications', function () {
-        return view('notifications');
-    });
-    Route::get('/api/notifications',[NotificationController::class,'index']);
-});
+Route::post('/notifications/mark-read', [NotificationController::class, 'markAllRead'])->name('notifications.mark-read');
 
 /* Genre */
 Route::get('/genres/{genre}', [GenreController::class, 'show'])->name('genres.show');

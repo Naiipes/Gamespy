@@ -183,8 +183,7 @@ class GameDiscoveryService
             'simulation',
             'racing',
             'indie',
-            'casual',
-            'massively multiplayer'
+            'casual'
         ];
 
 

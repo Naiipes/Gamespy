@@ -229,27 +229,13 @@ footer {
     width: 500px;
     padding: 14px;
     border: 1px solid #3f3f46;
-    border-radius: 2px;
+    border-radius: 6px;
     background-color: #262626;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
     z-index: 1001;
 }
 
 .navbar-notification-dropdown[hidden] {
     display: none;
-}
-
-.navbar-notification-dropdown::before {
-    content: "";
-    position: absolute;
-    top: -7px;
-    right: 18px;
-    width: 14px;
-    height: 14px;
-    background: #262626;
-    border-top: 1px solid #3f3f46;
-    border-left: 1px solid #3f3f46;
-    transform: rotate(45deg);
 }
 
 .navbar-notification-card {
@@ -258,21 +244,28 @@ footer {
     gap: 16px;
     padding: 14px;
     border: 1px solid #3f3f46;
-    border-radius: 10px;
+    border-radius: 6px;
     background-color: #171717;
+    color: inherit;
+    margin-left: 0;
+    cursor: pointer;
 }
 
-.navbar-notification-image {
-    width: 72px;
-    height: 72px;
-    border-radius: 8px;
-    object-fit: cover;
-    flex-shrink: 0;
+.navbar-notification-card:hover {
+    background-color: #20242b;
+    border-color: #5b6472;
 }
 
-.navbar-notification-body {
-    min-width: 0;
-    flex: 1;
+.navbar-notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.navbar-notification-empty {
+    padding: 0px;
+    color: #d4d4d8;
+    font-size: 1rem;
 }
 
 .navbar-notification-meta {
@@ -287,24 +280,12 @@ footer {
 .navbar-notification-type {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-}
-
-.navbar-notification-type::before {
-    content: "";
-    width: 11px;
-    height: 11px;
-    border-radius: 2px;
-    background-color: #d2d4da;
-    transform: rotate(45deg);
-    opacity: 0.85;
-    flex-shrink: 0;
 }
 
 .navbar-notification-title {
     color: #ffffff;
-    font-size: 1.55rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: bold;
     line-height: 1.1;
     margin-bottom: 8px;
 }
@@ -312,14 +293,12 @@ footer {
 .navbar-notification-text {
     color: #d4d4d8;
     font-size: 0.98rem;
-    line-height: 1.35;
 }
 
 .navbar-notification-more {
-    padding: 12px 4px 0;
+    padding: 12px 0px 0px;
     color: #d4d4d8;
     font-size: 0.95rem;
-    line-height: 1.4;
 }
 
 /* Nav Bar End */
@@ -906,7 +885,7 @@ footer {
     width: 260px;
     padding: 14px;
     border: 1px solid #3f3f46;
-    border-radius: 10px;
+    border-radius: 6px;
     background-color: #262626;
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
     z-index: 30;

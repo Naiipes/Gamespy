@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\PendingRequest;
 
 class CheapSharkService
 {
@@ -42,10 +43,22 @@ class CheapSharkService
         return self::STORES;
     }
 
+    public static function client(): PendingRequest
+    {
+        $request = Http::timeout(15);
+
+        // Local PHP setups on Windows can fail SSL verification without a CA bundle.
+        if (app()->environment('local')) {
+            $request = $request->withoutVerifying();
+        }
+
+        return $request;
+    }
+
     public function search($query)
     {
 
-        $response = Http::get(
+        $response = self::client()->get(
             "https://www.cheapshark.com/api/1.0/games",
             [
                 "title"=>$query,
@@ -59,7 +72,7 @@ class CheapSharkService
 
     public function searchDeals($query)
     {
-        $response = Http::get(
+        $response = self::client()->get(
             "https://www.cheapshark.com/api/1.0/deals",
             [
                 "title" => $query,
@@ -73,7 +86,7 @@ class CheapSharkService
     public function deals($gameId)
     {
 
-        $response = Http::get(
+        $response = self::client()->get(
             "https://www.cheapshark.com/api/1.0/games",
             [
                 "id"=>$gameId

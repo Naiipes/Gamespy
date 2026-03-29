@@ -49,4 +49,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Wishlist::class);
     }
+
+    public function wishlistNotifications()
+    {
+        return $this->hasMany(\App\Models\Notification::class);
+    }
 }

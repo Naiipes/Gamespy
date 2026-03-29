@@ -49,8 +49,8 @@ class WishlistController extends Controller
             "user_id" => auth()->id(),
             "game_id" => $validated['game_id'],
             "target_price" => $validated['target_price'],
-            "notifications_enabled" => (float) $validated['target_price'] > 0,
-            "notify_by_email" => (float) $validated['target_price'] > 0,
+            "notifications_enabled" => true,
+            "notify_by_email" => false,
             "use_target_price" => (float) $validated['target_price'] > 0,
         ]);
 

@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Wishlist;
 use App\Models\Notification;
@@ -19,70 +19,122 @@ class PriceCheckerService
 
         foreach ($wishlists as $wishlist)
         {
-            if (!$wishlist->notifications_enabled) {
+            $game = $wishlist->game;
+
+            if (!$game || !$game->cheapshark_id) {
                 continue;
             }
 
-            $game = $wishlist->game;
+            try {
+                $response = CheapSharkService::client()->get(
+                    "https://www.cheapshark.com/api/1.0/games",
+                    ["id" => $game->cheapshark_id]
+                );
 
-            $response = Http::get(
-                "https://www.cheapshark.com/api/1.0/games",
-                ["title"=>$game->title]
-            );
-
-            $data = $response->json();
+                $data = $response->json();
+            } catch (ConnectionException $e) {
+                logger()->warning('Price check skipped because CheapShark request failed.', [
+                    'game_id' => $game->id,
+                    'title' => $game->title,
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
 
             if (!$data)
             {
                 continue;
             }
 
-            $currentPrice = $data[0]["cheapest"];
-            $dealID = $data[0]["cheapestDealID"];
+            $bestDeal = collect($data["deals"] ?? [])
+                ->sortBy(fn ($deal) => (float) ($deal["price"] ?? INF))
+                ->first();
 
-            $dealResponse = Http::get(
-                "https://www.cheapshark.com/api/1.0/deals",
-                ["id"=>$dealID]
-            );
-
-            $deal = $dealResponse->json();
-
-            $storeName = $stores[$deal["storeID"]] ?? "Unknown";
-
-            $alreadyNotified = Notification::where('user_id', $wishlist->user_id)
-            ->where('game_id', $game->id)
-            ->where('is_read', false)
-            ->exists();
-
-            $isTargetHit = $wishlist->use_target_price
-                ? ($wishlist->target_price && $currentPrice <= $wishlist->target_price)
-                : false;
-
-            if ($isTargetHit && !$alreadyNotified)
-            {
-
-                Notification::create([
-                    "user_id"=>$wishlist->user_id,
-                    "game_id"=>$game->id,
-                    "price"=>$currentPrice,
-                    "target_price"=>$wishlist->target_price,
-                    "store"=>$storeName,
-                    "is_read"=>false
-                ]);
-
-                if ($wishlist->notify_by_email) {
-                    Mail::to($wishlist->user->email)
-                        ->send(new PriceDropMail(
-                            $game->title,
-                            $currentPrice,
-                            $wishlist->target_price,
-                            $storeName
-                        ));
-                }
+            if (!$bestDeal) {
+                $wishlist->was_on_sale_last_check = false;
+                $wishlist->target_notification_sent = false;
+                $wishlist->save();
+                continue;
             }
 
+            $currentPrice = isset($bestDeal["price"]) ? (float) $bestDeal["price"] : null;
+            $retailPrice = isset($bestDeal["retailPrice"])
+                ? (float) $bestDeal["retailPrice"]
+                : $currentPrice;
+
+            if ($currentPrice === null) {
+                logger()->warning('Price check skipped because CheapShark game deal data was incomplete.', [
+                    'game_id' => $game->id,
+                    'title' => $game->title,
+                    'payload' => $bestDeal,
+                ]);
+                continue;
+            }
+
+            $isOnSale = $retailPrice > $currentPrice;
+            $previousSaleState = $wishlist->was_on_sale_last_check;
+            $targetPrice = (float) $wishlist->target_price;
+            $useTargetPrice = (bool) $wishlist->use_target_price;
+            $targetHit = $useTargetPrice && $currentPrice <= $targetPrice;
+            $storeId = $bestDeal["storeID"] ?? null;
+            $storeName = $stores[(int) $storeId] ?? "Unknown";
+
+            if (!$wishlist->notifications_enabled) {
+                $wishlist->was_on_sale_last_check = $isOnSale;
+                $wishlist->target_notification_sent = false;
+                $wishlist->save();
+                continue;
+            }
+
+            if ($useTargetPrice) {
+                if ($targetHit && !$wishlist->target_notification_sent) {
+                    $this->createNotification($wishlist, $currentPrice, $storeName, 'target_price');
+                    $wishlist->target_notification_sent = true;
+                } elseif (!$targetHit) {
+                    $wishlist->target_notification_sent = false;
+                }
+            } else {
+                if ($previousSaleState === false && $isOnSale) {
+                    $this->createNotification($wishlist, $currentPrice, $storeName, 'sale');
+                }
+
+                $wishlist->target_notification_sent = false;
+            }
+
+            $wishlist->was_on_sale_last_check = $isOnSale;
+            $wishlist->save();
         }
 
     }
 
+    private function createNotification(
+        Wishlist $wishlist,
+        float $currentPrice,
+        string $storeName,
+        string $type
+    ): void {
+        $game = $wishlist->game;
+        $targetPrice = $type === 'target_price' ? (float) $wishlist->target_price : null;
+
+        Notification::create([
+            "user_id" => $wishlist->user_id,
+            "game_id" => $game->id,
+            "type" => $type,
+            "price" => $currentPrice,
+            "target_price" => $targetPrice,
+            "store" => $storeName,
+            "is_read" => false,
+        ]);
+
+        if ($wishlist->notify_by_email) {
+            Mail::to($wishlist->user->email)
+                ->send(new PriceDropMail(
+                    $game->title,
+                    $currentPrice,
+                    $targetPrice ?? 0,
+                    $storeName,
+                    $type
+                ));
+        }
+    }
 }

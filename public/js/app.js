@@ -134,6 +134,52 @@ function closeNavbarNotificationDropdown() {
     toggle.setAttribute("aria-expanded", "false");
 }
 
+async function markNavbarNotificationsRead(panel) {
+    const notification = document.getElementById("navbar-notification");
+    const toggle = document.getElementById("navbar-notification-toggle");
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+    const markReadUrl = notification?.dataset.markReadUrl;
+
+    if (
+        !panel ||
+        panel.dataset.hasUnread !== "true" ||
+        panel.dataset.markingRead === "true" ||
+        !csrf ||
+        !markReadUrl
+    ) {
+        return;
+    }
+
+    panel.dataset.markingRead = "true";
+
+    try {
+        const response = await fetch(markReadUrl, {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": csrf,
+                Accept: "application/json",
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Request failed");
+        }
+
+        panel.dataset.hasUnread = "false";
+
+        const count = document.getElementById("navbar-notification-count");
+        if (count) {
+            count.remove();
+        }
+
+        toggle?.classList.remove("has-unread");
+    } catch (_error) {
+        return;
+    } finally {
+        delete panel.dataset.markingRead;
+    }
+}
+
 function initNavbarNotificationDropdown() {
     const notification = document.getElementById("navbar-notification");
     const toggle = document.getElementById("navbar-notification-toggle");
@@ -159,6 +205,7 @@ function initNavbarNotificationDropdown() {
         notification.classList.add("is-open");
         panel.hidden = false;
         toggle.setAttribute("aria-expanded", "true");
+        markNavbarNotificationsRead(panel);
     });
 
     document.addEventListener("click", (event) => {
