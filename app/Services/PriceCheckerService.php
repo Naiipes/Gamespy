@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 use App\Models\Wishlist;
 use App\Models\Notification;
 use App\Mail\PriceDropMail;
@@ -127,14 +128,26 @@ class PriceCheckerService
         ]);
 
         if ($wishlist->notify_by_email) {
-            Mail::to($wishlist->user->email)
-                ->send(new PriceDropMail(
-                    $game->title,
-                    $currentPrice,
-                    $targetPrice ?? 0,
-                    $storeName,
-                    $type
-                ));
+            try {
+                Mail::to($wishlist->user->email)
+                    ->send(new PriceDropMail(
+                        $game->title,
+                        $currentPrice,
+                        $targetPrice ?? 0,
+                        $storeName,
+                        $type
+                    ));
+            } catch (Throwable $e) {
+                logger()->warning('Price notification email failed to send.', [
+                    'wishlist_id' => $wishlist->id,
+                    'user_id' => $wishlist->user_id,
+                    'recipient' => $wishlist->user?->email,
+                    'game_id' => $game->id,
+                    'game_title' => $game->title,
+                    'type' => $type,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
     }
 }
