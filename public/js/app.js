@@ -173,6 +173,29 @@ async function markNavbarNotificationsRead(panel) {
         }
 
         toggle?.classList.remove("has-unread");
+
+        const list = panel.querySelector(".navbar-notification-list");
+        if (list) {
+            list.remove();
+        }
+
+        const more = panel.querySelector(".navbar-notification-more");
+        if (more) {
+            more.remove();
+        }
+
+        const footer = panel.querySelector(".navbar-notification-footer");
+        if (footer) {
+            footer.remove();
+        }
+
+        let empty = panel.querySelector(".navbar-notification-empty");
+        if (!empty) {
+            empty = document.createElement("p");
+            empty.className = "navbar-notification-empty";
+            empty.textContent = "No new notifications";
+            panel.appendChild(empty);
+        }
     } catch (_error) {
         return;
     } finally {
@@ -185,6 +208,7 @@ function initNavbarNotificationDropdown() {
     const toggle = document.getElementById("navbar-notification-toggle");
     const panelId = toggle?.getAttribute("aria-controls");
     const panel = panelId ? document.getElementById(panelId) : null;
+    const clearButton = document.getElementById("navbar-notification-clear");
 
     if (!notification || !toggle || !panel) {
         return;
@@ -205,19 +229,12 @@ function initNavbarNotificationDropdown() {
         notification.classList.add("is-open");
         panel.hidden = false;
         toggle.setAttribute("aria-expanded", "true");
+    });
+
+    clearButton?.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
         markNavbarNotificationsRead(panel);
-    });
-
-    document.addEventListener("click", (event) => {
-        if (!notification.contains(event.target)) {
-            closeNavbarNotificationDropdown();
-        }
-    });
-
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-            closeNavbarNotificationDropdown();
-        }
     });
 }
 

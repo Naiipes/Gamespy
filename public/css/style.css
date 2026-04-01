@@ -301,6 +301,25 @@ footer {
     font-size: 0.95rem;
 }
 
+.navbar-notification-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 12px;
+}
+
+.navbar-notification-clear {
+    border: none;
+    background: none;
+    color: #d4d4d8;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.navbar-notification-clear:hover {
+    color: #ffffff;
+}
+
 /* Nav Bar End */
 
 /* Login and Register Styles by Satoi*/
@@ -802,6 +821,14 @@ footer {
 .wishlist-wrapper .result-card {
     overflow: visible;
     cursor: pointer;
+}
+
+.wishlist-wrapper .result-card.target-hit {
+    background-color: rgba(71, 111, 118, 0.4);
+}
+
+.wishlist-wrapper .result-card.target-hit:hover {
+    background-color: rgba(93, 144, 152, 0.4);
 }
 
 .wishlist-wrapper .result-card:focus-visible {

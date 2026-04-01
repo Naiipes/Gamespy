@@ -34,7 +34,7 @@
                     
                     @endphp
 
-                    <div class="result-card"
+                    <div class="result-card{{ $item->target_notification_sent ? ' target-hit' : '' }}"
                         data-deal-url="{{ $item->game->dealID ? 'https://www.cheapshark.com/redirect?dealID=' . $item->game->dealID : '' }}"
                         role="link"
                         tabindex="0">

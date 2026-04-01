@@ -35,7 +35,6 @@
 
                         <div class="slide-title">{{ $game['title'] }}</div>
 
-
                         <div class="slide-info-bar">
                             <div class="slide-pricing">
                                 <div class="discount-badge">-{{ $savings }}%</div>
@@ -100,6 +99,11 @@
                         <div class="catalog-original-price">${{ $game['normalPrice'] }}</div>
                         <div class="catalog-sale-price">${{ $game['salePrice'] }}
                         </div>
+                        @if (!empty($game['storeID']))
+                        <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
+                        style="width: 24px; height: auto; margin-left: auto;" alt="{{ $storeName }}"
+                        onerror="this.style.display='none'">
+                        @endif
                         <button class="wishlist-btn"
                             data-cheapshark-id="{{ $game['gameID'] }}"
                             data-steam-app-id="{{ $game['steamAppID'] ?? '' }}"
@@ -109,11 +113,6 @@
                             onclick="event.preventDefault(); event.stopPropagation(); addToWishlist(this)">
                             <x-heart-btn />
                         </button>
-                        @if (!empty($game['storeID']))
-                            <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
-                                style="width: 24px; height: auto; margin-left: auto;" alt="{{ $storeName }}"
-                                onerror="this.style.display='none'">
-                        @endif
                     </div>
                 </a>
             @endforeach
