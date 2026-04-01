@@ -231,6 +231,18 @@ function initNavbarNotificationDropdown() {
         toggle.setAttribute("aria-expanded", "true");
     });
 
+    document.addEventListener("click", (event) => {
+        if (!notification.contains(event.target)) {
+            closeNavbarNotificationDropdown();
+        }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            closeNavbarNotificationDropdown();
+        }
+    });
+
     clearButton?.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();
