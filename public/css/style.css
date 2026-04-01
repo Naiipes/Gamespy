@@ -550,27 +550,27 @@ footer {
 .slide-pricing {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .discount-badge {
     background-color: #4c6b22;
     color: #a4d007;
-    font-size: 1rem;
+    font-size: 1.3rem;
     font-weight: 700;
-    padding: 3px 7px;
+    padding: 4px 9px;
     border-radius: 3px;
 }
 
 .original-price {
     color: #aaaaaa;
-    font-size: 1rem;
+    font-size: 1.2rem;
     text-decoration: line-through;
 }
 
 .sale-price {
     color: white;
-    font-size: 1.3rem;
+    font-size: 1.7rem;
     font-weight: 700;
 }
 

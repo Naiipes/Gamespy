@@ -40,6 +40,13 @@
                                 <div class="discount-badge">-{{ $savings }}%</div>
                                 <div class="original-price">${{ $game['normalPrice'] }}</div>
                                 <div class="sale-price">${{ $game['salePrice'] }}</div>
+                                @if (!empty($game['storeID']))
+                                    <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
+                                        style="width: 35px; height: auto;" alt="{{ $storeName }}"
+                                        onerror="this.style.display='none'">
+                                @endif
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px;">
                                 <button class="wishlist-btn"
                                     data-cheapshark-id="{{ $game['gameID'] }}"
                                     data-steam-app-id="{{ $game['steamAppID'] ?? '' }}"
@@ -47,14 +54,9 @@
                                     data-thumb="{{ $game['thumb'] }}"
                                     data-price="{{ $game['salePrice'] }}"
                                     onclick="event.preventDefault(); event.stopPropagation(); addToWishlist(this)">
-                                    <x-heart-btn />
+                                    <x-heart-btn width="40px" height="40px" />
                                 </button>
                             </div>
-                            @if (!empty($game['storeID']))
-                                <img src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $game['storeID']) - 1, 0) }}.png"
-                                    style="width: 35px; height: auto;" alt="{{ $storeName }}"
-                                    onerror="this.style.display='none'">
-                            @endif
                         </div>
                     </a>
                 @endforeach
