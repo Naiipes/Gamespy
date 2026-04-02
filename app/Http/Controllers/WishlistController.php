@@ -63,14 +63,26 @@ class WishlistController extends Controller
             if (request()->wantsJson()) {
                 return response()->json([]);
             }
-            return view('wishlist', ['wishlists' => []]);
+            return view('wishlist', [
+                'wishlists' => [],
+                'wishlistUnreadNotifications' => collect(),
+            ]);
         }
 
-        $wishlists = auth()
-            ->user()
+        $user = auth()->user();
+
+        $wishlists = $user
             ->wishlists()
             ->with("game")
             ->get();
+
+        $wishlistUnreadNotifications = $user
+            ->wishlistNotifications()
+            ->where('is_read', false)
+            ->latest()
+            ->get()
+            ->unique('game_id')
+            ->keyBy('game_id');
 
         $wishlists->each(function ($wishlist) use ($service) {
             $game = $wishlist->game;
@@ -102,7 +114,7 @@ class WishlistController extends Controller
             return response()->json($wishlists);
         }
 
-        return view('wishlist', compact('wishlists'));
+        return view('wishlist', compact('wishlists', 'wishlistUnreadNotifications'));
     }
 
     public function gameIds()

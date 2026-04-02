@@ -308,16 +308,20 @@ footer {
 }
 
 .navbar-notification-clear {
-    border: none;
-    background: none;
-    color: #d4d4d8;
+    font-family: inherit;
+    border: 1px solid #3f3f46;
+    border-radius: 4px;
+    background-color: #171717;
+    color: #b4b4b7;
     font-size: 0.9rem;
     cursor: pointer;
-    padding: 0;
+    padding: 2px 4px;
 }
 
 .navbar-notification-clear:hover {
     color: #ffffff;
+    background-color: #20242b;
+    border-color: #5b6472;
 }
 
 /* Nav Bar End */
@@ -556,21 +560,21 @@ footer {
 .discount-badge {
     background-color: #4c6b22;
     color: #a4d007;
-    font-size: 1.3rem;
-    font-weight: 700;
+    font-size: 1rem;
+    font-weight: bold;
     padding: 4px 9px;
     border-radius: 3px;
 }
 
 .original-price {
     color: #aaaaaa;
-    font-size: 1.2rem;
+    font-size: 1rem;
     text-decoration: line-through;
 }
 
 .sale-price {
     color: white;
-    font-size: 1.7rem;
+    font-size: 1.3rem;
     font-weight: 700;
 }
 
@@ -772,6 +776,24 @@ footer {
     padding: 4px;
 }
 
+.carousel-wishlist-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    flex-shrink: 0;
+}
+
+.carousel-wishlist-btn svg {
+    width: 24px;
+    height: 24px;
+    transform: scale(1.35);
+    transform-origin: center;
+}
+
 .wishlist-btn svg path {
     stroke: #c0c0c0;
 }
@@ -823,13 +845,21 @@ footer {
     cursor: pointer;
 }
 
-.wishlist-wrapper .result-card.target-hit {
+/* .wishlist-wrapper .result-card.target-hit {
     background-color: rgba(71, 111, 118, 0.4);
 }
 
 .wishlist-wrapper .result-card.target-hit:hover {
     background-color: rgba(93, 144, 152, 0.4);
+} */
+
+/* .wishlist-wrapper .result-card.sale-hit {
+    background-color: rgba(71, 111, 118, 0.4);
 }
+
+.wishlist-wrapper .result-card.sale-hit:hover {
+    background-color: rgba(93, 144, 152, 0.4);
+} */
 
 .wishlist-wrapper .result-card:focus-visible {
     outline: 2px solid #4481b8;
@@ -838,6 +868,10 @@ footer {
 
 .wishlist-wrapper .result-main {
     position: relative;
+}
+
+.wishlist-wrapper .result-main.has-hit-label {
+    padding-bottom: 28px;
 }
 
 .wishlist-wrapper .result-top-row {
@@ -858,6 +892,31 @@ footer {
     position: static;
     margin-top: 0px;
 }
+
+.wishlist-hit-label {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 0 8px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border-radius: 10px;
+    color: #9a9a9a;
+}
+
+/* .wishlist-hit-label.is-target {
+    background-color: rgba(68, 129, 184, 0.85);
+}
+
+.wishlist-hit-label.is-sale {
+    background-color: #4c6b22;
+} */
 
 .result-top-row {
     display: flex;

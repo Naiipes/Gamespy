@@ -130,9 +130,8 @@
 
                             @if ($navbarNotifications->isNotEmpty())
                                 <div class="navbar-notification-footer">
-                                    <button class="navbar-notification-clear" id="navbar-notification-clear"
-                                        type="button">
-                                        [CLEAR]
+                                    <button class="navbar-notification-clear" id="navbar-notification-clear" type="button">
+                                        CLEAR
                                     </button>
                                 </div>
                             @endif

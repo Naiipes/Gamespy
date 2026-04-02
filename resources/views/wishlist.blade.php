@@ -30,11 +30,13 @@
                         $useTargetPrice = isset($item->use_target_price)
                             ? (bool) $item->use_target_price
                             : (float) $item->target_price > 0;
-
-                    
+                        $unreadNotification = $wishlistUnreadNotifications->get($item->game_id);
+                        $isTargetHit = $unreadNotification?->type === 'target_price';
+                        $isSaleHit = $unreadNotification?->type === 'sale';
+                        $typeLabel = $isTargetHit ? 'Target Price Hit' : ($isSaleHit ? 'Wishlist Sale' : null);
                     @endphp
 
-                    <div class="result-card{{ $item->target_notification_sent ? ' target-hit' : '' }}"
+                    <div class="result-card{{ $isTargetHit ? ' target-hit' : '' }}{{ $isSaleHit ? ' sale-hit' : '' }}"
                         data-deal-url="{{ $item->game->dealID ? 'https://www.cheapshark.com/redirect?dealID=' . $item->game->dealID : '' }}"
                         role="link"
                         tabindex="0">
@@ -49,7 +51,7 @@
                                 }"
                             alt="{{ $item->game->title }}">
                         <div class="result-info">
-                            <div class="result-main">
+                            <div class="result-main{{ $typeLabel ? ' has-hit-label' : '' }}">
                                 <div class="result-top-row">
                                     <h2 class="result-title">{{ $item->game->title }}</h2>
 
@@ -124,6 +126,11 @@
                                     <img class="result-store-logo" src="https://www.cheapshark.com/img/stores/logos/{{ max(((int) $item->game->storeID) - 1, 0) }}.png"
                                         style="width: 35px; height: auto;" alt="{{ $storeName }}"
                                         onerror="this.style.display='none'">
+                                @endif
+                                @if ($typeLabel)
+                                    <span class="wishlist-hit-label{{ $isTargetHit ? ' is-target' : ' is-sale' }}">
+                                        {{ $typeLabel }}
+                                    </span>
                                 @endif
                             </div>
                         </div>

@@ -47,14 +47,14 @@
                                 @endif
                             </div>
                             <div style="display:flex; align-items:center; gap:6px;">
-                                <button class="wishlist-btn"
+                                <button class="wishlist-btn carousel-wishlist-btn"
                                     data-cheapshark-id="{{ $game['gameID'] }}"
                                     data-steam-app-id="{{ $game['steamAppID'] ?? '' }}"
                                     data-title="{{ $game['title'] }}"
                                     data-thumb="{{ $game['thumb'] }}"
                                     data-price="{{ $game['salePrice'] }}"
                                     onclick="event.preventDefault(); event.stopPropagation(); addToWishlist(this)">
-                                    <x-heart-btn width="40px" height="40px" />
+                                    <x-heart-btn />
                                 </button>
                             </div>
                         </div>

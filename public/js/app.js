@@ -134,6 +134,24 @@ function closeNavbarNotificationDropdown() {
     toggle.setAttribute("aria-expanded", "false");
 }
 
+function clearWishlistNotificationHighlights() {
+    document
+        .querySelectorAll(".result-card.target-hit, .result-card.sale-hit")
+        .forEach((card) => {
+            card.classList.remove("target-hit", "sale-hit");
+        });
+
+    document
+        .querySelectorAll(".wishlist-wrapper .result-main.has-hit-label")
+        .forEach((main) => {
+            main.classList.remove("has-hit-label");
+        });
+
+    document.querySelectorAll(".wishlist-hit-label").forEach((label) => {
+        label.remove();
+    });
+}
+
 async function markNavbarNotificationsRead(panel) {
     const notification = document.getElementById("navbar-notification");
     const toggle = document.getElementById("navbar-notification-toggle");
@@ -171,6 +189,8 @@ async function markNavbarNotificationsRead(panel) {
         if (count) {
             count.remove();
         }
+
+        clearWishlistNotificationHighlights();
 
         toggle?.classList.remove("has-unread");
 
