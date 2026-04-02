@@ -19,7 +19,7 @@ class GameSearchController extends Controller
             return view('search', ['games' => []]);
         }
 
-        $results = $service->searchDeals($query);
+        $results = CheapSharkService::normalizeDealList($service->searchDeals($query));
 
         if (empty($results)) {
             if ($request->wantsJson()) {
@@ -31,9 +31,7 @@ class GameSearchController extends Controller
         $lowestDeals = collect($results)
             ->groupBy(fn ($game) => $game['gameID'] ?? $game['internalName'] ?? $game['title'])
             ->map(function ($deals) {
-                return $deals
-                    ->sortBy(fn ($deal) => (float) ($deal['salePrice'] ?? INF))
-                    ->first();
+                return CheapSharkService::selectPreferredDeal($deals->all()) ?? $deals->first();
             })
             ->values();
 

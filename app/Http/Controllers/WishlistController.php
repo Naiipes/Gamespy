@@ -92,9 +92,7 @@ class WishlistController extends Controller
             }
 
             $dealData = $service->deals($game->cheapshark_id);
-            $bestDeal = collect($dealData["deals"] ?? [])
-                ->sortBy(fn ($deal) => (float) ($deal["price"] ?? INF))
-                ->first();
+            $bestDeal = CheapSharkService::selectPreferredDeal($dealData['deals'] ?? []);
 
             if (!$bestDeal) {
                 $game->salePrice = $game->cheapest_price;

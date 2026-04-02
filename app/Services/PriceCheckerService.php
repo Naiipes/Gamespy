@@ -14,8 +14,6 @@ class PriceCheckerService
 
     public function checkPrices()
     {
-        $stores = CheapSharkService::getAllStores();
-
         $wishlists = Wishlist::with(["game","user"])->get();
 
         foreach ($wishlists as $wishlist)
@@ -47,9 +45,7 @@ class PriceCheckerService
                 continue;
             }
 
-            $bestDeal = collect($data["deals"] ?? [])
-                ->sortBy(fn ($deal) => (float) ($deal["price"] ?? INF))
-                ->first();
+            $bestDeal = CheapSharkService::selectPreferredDeal($data['deals'] ?? []);
 
             if (!$bestDeal) {
                 $wishlist->was_on_sale_last_check = false;
@@ -77,8 +73,9 @@ class PriceCheckerService
             $targetPrice = (float) $wishlist->target_price;
             $useTargetPrice = (bool) $wishlist->use_target_price;
             $targetHit = $useTargetPrice && $currentPrice <= $targetPrice;
-            $storeId = $bestDeal["storeID"] ?? null;
-            $storeName = $stores[(int) $storeId] ?? "Unknown";
+            $storeName = CheapSharkService::resolveStoreName($bestDeal['storeID'] ?? null);
+
+            $this->syncUnreadNotificationStore($wishlist, $storeName);
 
             if (!$wishlist->notifications_enabled) {
                 $wishlist->was_on_sale_last_check = $isOnSale;
@@ -149,5 +146,19 @@ class PriceCheckerService
                 ]);
             }
         }
+    }
+
+    private function syncUnreadNotificationStore(Wishlist $wishlist, string $storeName): void
+    {
+        $gameId = $wishlist->game?->id;
+
+        if (!$gameId) {
+            return;
+        }
+
+        Notification::where('user_id', $wishlist->user_id)
+            ->where('game_id', $gameId)
+            ->where('is_read', false)
+            ->update(['store' => $storeName]);
     }
 }

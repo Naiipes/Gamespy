@@ -14,7 +14,11 @@ class BuildGameDiscoveryCache extends Command
     {
         $this->info('Building game discovery cache...');
 
-        $service->buildDailyCache();
+        if (!$service->buildDailyCache()) {
+            $this->warn('Skipped cache refresh because CheapShark returned no valid deals. Existing cache was kept.');
+
+            return Command::FAILURE;
+        }
 
         $this->info('Done.');
 
