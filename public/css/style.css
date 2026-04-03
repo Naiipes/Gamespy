@@ -845,16 +845,16 @@ footer {
     cursor: pointer;
 }
 
-/* .wishlist-wrapper .result-card.target-hit {
-    background-color: rgba(71, 111, 118, 0.4);
+.wishlist-wrapper .result-card.target-hit {
+    background-color: rgba(59, 113, 160, 0.628);
 }
 
 .wishlist-wrapper .result-card.target-hit:hover {
-    background-color: rgba(93, 144, 152, 0.4);
-} */
+    background-color: rgba(66, 126, 178, 0.854);
+}
 
 /* .wishlist-wrapper .result-card.sale-hit {
-    background-color: rgba(71, 111, 118, 0.4);
+    background-color: rgba(60, 130, 92, 0.4);
 }
 
 .wishlist-wrapper .result-card.sale-hit:hover {
@@ -901,22 +901,23 @@ footer {
     align-items: center;
     min-height: 22px;
     padding: 0 8px;
-    font-size: 0.75rem;
+    font-size: 0.80rem;
     font-weight: bold;
     letter-spacing: 0.02em;
     text-transform: uppercase;
     white-space: nowrap;
     border-radius: 10px;
-    color: #9a9a9a;
+    color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 
-/* .wishlist-hit-label.is-target {
+.wishlist-hit-label.is-target {
     background-color: rgba(68, 129, 184, 0.85);
 }
 
 .wishlist-hit-label.is-sale {
     background-color: #4c6b22;
-} */
+}
 
 .result-top-row {
     display: flex;
