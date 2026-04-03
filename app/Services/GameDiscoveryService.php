@@ -127,24 +127,40 @@ class GameDiscoveryService
             ->reject(fn ($id) => array_key_exists($id, $cached))
             ->values();
 
-        foreach ($missingIds as $id) {
-            $res = Http::get('https://store.steampowered.com/api/appdetails', [
-                'appids' => $id,
-            ])->json();
+        // Batch Steam API requests (10 appids per request instead of 1 per request)
+        $batchSize = 10;
+        foreach (array_chunk($missingIds->all(), $batchSize) as $batch) {
+            try {
+                $res = Http::get('https://store.steampowered.com/api/appdetails', [
+                    'appids' => implode(',', $batch),
+                ])->json();
 
-            $genres = [];
+                foreach ($batch as $id) {
+                    $genres = [];
 
-            if (!empty($res[$id]['success']) && !empty($res[$id]['data']['genres'])) {
-                $genres = collect($res[$id]['data']['genres'])
-                    ->pluck('description')
-                    ->map(fn ($g) => strtolower($g))
-                    ->values()
-                    ->all();
+                    if (!empty($res[$id]['success']) && !empty($res[$id]['data']['genres'])) {
+                        $genres = collect($res[$id]['data']['genres'])
+                            ->pluck('description')
+                            ->map(fn ($g) => strtolower($g))
+                            ->values()
+                            ->all();
+                    }
+
+                    // Cache misses (including empty genre arrays) to avoid re-fetching next run.
+                    $cached[$id] = $genres;
+                    $result[$id] = $genres;
+                }
+            } catch (ConnectionException $e) {
+                logger()->warning('Steam genre batch fetch failed.', [
+                    'batch_size' => count($batch),
+                    'error' => $e->getMessage(),
+                ]);
+                // Mark missing batch items as empty genre to avoid re-fetching
+                foreach ($batch as $id) {
+                    $cached[$id] = [];
+                    $result[$id] = [];
+                }
             }
-
-            // Cache misses (including empty genre arrays) to avoid re-fetching next run.
-            $cached[$id] = $genres;
-            $result[$id] = $genres;
         }
 
         if ($missingIds->isNotEmpty()) {

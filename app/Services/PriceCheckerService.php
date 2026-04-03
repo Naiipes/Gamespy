@@ -16,91 +16,101 @@ class PriceCheckerService
     {
         $wishlists = Wishlist::with(["game","user"])->get();
 
-        foreach ($wishlists as $wishlist)
-        {
-            $game = $wishlist->game;
+        // Group by game_id to avoid duplicate API calls for the same game
+        $wishlistsByGame = $wishlists->groupBy(fn($w) => $w->game_id);
+        $gameDataCache = [];
+
+        foreach ($wishlistsByGame as $gameId => $gameWishlists) {
+            $game = $gameWishlists->first()?->game;
 
             if (!$game || !$game->cheapshark_id) {
                 continue;
             }
 
-            try {
-                $response = CheapSharkService::client()->get(
-                    "https://www.cheapshark.com/api/1.0/games",
-                    ["id" => $game->cheapshark_id]
-                );
+            // Fetch game data only once per game
+            if (!isset($gameDataCache[$game->id])) {
+                try {
+                    $response = CheapSharkService::client()->get(
+                        "https://www.cheapshark.com/api/1.0/games",
+                        ["id" => $game->cheapshark_id]
+                    );
 
-                $data = $response->json();
-            } catch (ConnectionException $e) {
-                logger()->warning('Price check skipped because CheapShark request failed.', [
-                    'game_id' => $game->id,
-                    'title' => $game->title,
-                    'error' => $e->getMessage(),
-                ]);
-                continue;
+                    $gameDataCache[$game->id] = $response->json();
+                } catch (ConnectionException $e) {
+                    logger()->warning('Price check skipped because CheapShark request failed.', [
+                        'game_id' => $game->id,
+                        'title' => $game->title,
+                        'error' => $e->getMessage(),
+                    ]);
+                    continue;
+                }
             }
 
-            if (!$data)
-            {
+            $data = $gameDataCache[$game->id];
+
+            if (!$data) {
                 continue;
             }
 
             $bestDeal = CheapSharkService::selectPreferredDeal($data['deals'] ?? []);
 
-            if (!$bestDeal) {
-                $wishlist->was_on_sale_last_check = false;
-                $wishlist->target_notification_sent = false;
-                $wishlist->save();
-                continue;
-            }
+            // Process all wishlists for this game with the cached data
+            foreach ($gameWishlists as $wishlist) {
+                if (!$bestDeal) {
+                    $wishlist->was_on_sale_last_check = false;
+                    $wishlist->target_notification_sent = false;
+                    $wishlist->save();
+                    continue;
+                }
 
-            $currentPrice = isset($bestDeal["price"]) ? (float) $bestDeal["price"] : null;
-            $retailPrice = isset($bestDeal["retailPrice"])
-                ? (float) $bestDeal["retailPrice"]
-                : $currentPrice;
+                $currentPrice = isset($bestDeal["price"]) ? (float) $bestDeal["price"] : null;
+                $retailPrice = isset($bestDeal["retailPrice"])
+                    ? (float) $bestDeal["retailPrice"]
+                    : $currentPrice;
 
-            if ($currentPrice === null) {
-                logger()->warning('Price check skipped because CheapShark game deal data was incomplete.', [
-                    'game_id' => $game->id,
-                    'title' => $game->title,
-                    'payload' => $bestDeal,
-                ]);
-                continue;
-            }
+                if ($currentPrice === null) {
+                    logger()->warning('Price check skipped because CheapShark game deal data was incomplete.', [
+                        'game_id' => $game->id,
+                        'title' => $game->title,
+                        'payload' => $bestDeal,
+                    ]);
+                    continue;
+                }
 
-            $isOnSale = $retailPrice > $currentPrice;
-            $previousSaleState = $wishlist->was_on_sale_last_check;
-            $targetPrice = (float) $wishlist->target_price;
-            $useTargetPrice = (bool) $wishlist->use_target_price;
-            $targetHit = $useTargetPrice && $currentPrice <= $targetPrice;
-            $storeName = CheapSharkService::resolveStoreName($bestDeal['storeID'] ?? null);
+                $isOnSale = $retailPrice > $currentPrice;
+                $previousSaleState = $wishlist->was_on_sale_last_check;
+                $targetPrice = (float) $wishlist->target_price;
+                $useTargetPrice = (bool) $wishlist->use_target_price;
+                $targetHit = $useTargetPrice && $currentPrice <= $targetPrice;
+                $storeName = CheapSharkService::resolveStoreName($bestDeal['storeID'] ?? null);
 
-            $this->syncUnreadNotificationStore($wishlist, $storeName);
+                $this->syncUnreadNotificationStore($wishlist, $storeName);
 
-            if (!$wishlist->notifications_enabled) {
-                $wishlist->was_on_sale_last_check = $isOnSale;
-                $wishlist->target_notification_sent = false;
-                $wishlist->save();
-                continue;
-            }
+                if (!$wishlist->notifications_enabled) {
+                    $wishlist->was_on_sale_last_check = $isOnSale;
+                    $wishlist->target_notification_sent = false;
+                    $wishlist->save();
+                    continue;
+                }
 
-            if ($useTargetPrice) {
-                if ($targetHit && !$wishlist->target_notification_sent) {
-                    $this->createNotification($wishlist, $currentPrice, $storeName, 'target_price');
-                    $wishlist->target_notification_sent = true;
-                } elseif (!$targetHit) {
+                if ($useTargetPrice) {
+                    if ($targetHit && !$wishlist->target_notification_sent) {
+                        $this->createNotification($wishlist, $currentPrice, $storeName, 'target_price');
+                        $wishlist->target_notification_sent = true;
+                    } elseif (!$targetHit) {
+                        $wishlist->target_notification_sent = false;
+                    }
+                } else {
+                    if ($previousSaleState === false && $isOnSale) {
+                        $this->createNotification($wishlist, $currentPrice, $storeName, 'sale');
+                    }
+
                     $wishlist->target_notification_sent = false;
                 }
-            } else {
-                if ($previousSaleState === false && $isOnSale) {
-                    $this->createNotification($wishlist, $currentPrice, $storeName, 'sale');
-                }
 
-                $wishlist->target_notification_sent = false;
+                $wishlist->was_on_sale_last_check = $isOnSale;
+                $wishlist->save();
             }
-
-            $wishlist->was_on_sale_last_check = $isOnSale;
-            $wishlist->save();
         }
 
     }
