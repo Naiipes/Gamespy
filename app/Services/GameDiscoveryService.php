@@ -89,7 +89,7 @@ class GameDiscoveryService
         $deals = $this->recommend(self::AAA_SOURCE_SIZE);
 
         $aaa = $deals->filter(function ($deal) {
-            return ($deal['normalPrice'] ?? 0) >= 29.99 && ($deal['steamRatingCount'] ?? 0) >= 500 && ($deal['metacriticScore'] ?? 0) >= 75;
+            return ($deal['normalPrice'] ?? 0) >= 39.99;
         });
 
         return $aaa->sortByDesc('savings')->sortByDesc('dealRating')->sortBy('salePrice')->values()->take(self::AAA_TARGET_SIZE);
