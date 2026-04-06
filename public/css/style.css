@@ -232,6 +232,11 @@ footer {
     border-radius: 6px;
     background-color: #262626;
     z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: calc(100vh - 90px);
+    overflow: hidden;
 }
 
 .navbar-notification-dropdown[hidden] {
@@ -260,6 +265,9 @@ footer {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
 }
 
 .navbar-notification-empty {
@@ -296,15 +304,19 @@ footer {
 }
 
 .navbar-notification-more {
-    padding: 12px 0px 0px;
+    padding: 0;
     color: #d4d4d8;
     font-size: 0.95rem;
+    flex-shrink: 0;
 }
 
 .navbar-notification-footer {
     display: flex;
     justify-content: flex-end;
     padding-top: 12px;
+    margin-top: auto;
+    border-top: 1px solid #3f3f46;
+    flex-shrink: 0;
 }
 
 .navbar-notification-clear {
