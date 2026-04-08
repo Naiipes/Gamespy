@@ -2,15 +2,19 @@
 
 namespace App\Services;
 
-use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Client\ConnectionException;
 use Throwable;
 use App\Models\Wishlist;
 use App\Models\Notification;
+use App\Models\Game;
 use App\Mail\PriceDropMail;
 
 class PriceCheckerService
 {
+    private const DEFERRED_WISHLIST_GAME_IDS_CACHE_KEY = 'prices:check:deferred-wishlist-game-ids';
+    private const DEFERRED_WISHLIST_GAME_IDS_TTL_MINUTES = 40;
 
     public function checkPrices()
     {
@@ -20,30 +24,50 @@ class PriceCheckerService
         $wishlistsByGame = $wishlists->groupBy(fn($w) => $w->game_id);
         $gameDataCache = [];
 
+        // Only call CheapShark for games that still have at least one notification-enabled wishlist.
+        $gamesToCheck = $wishlistsByGame
+            ->filter(fn ($group) => $group->contains(fn ($wishlist) => (bool) $wishlist->notifications_enabled))
+            ->map(fn ($group) => $group->first()?->game)
+            ->filter(fn ($game) => $game && $game->cheapshark_id)
+            ->keyBy(fn ($game) => $game->id)
+            ->values();
+
+        $deferredGames = $wishlistsByGame
+            ->reject(fn ($group) => $group->contains(fn ($wishlist) => (bool) $wishlist->notifications_enabled))
+            ->map(fn ($group) => $group->first()?->game)
+            ->filter(fn ($game) => $game && $game->cheapshark_id)
+            ->keyBy(fn ($game) => $game->id)
+            ->values();
+
+        Cache::put(
+            self::DEFERRED_WISHLIST_GAME_IDS_CACHE_KEY,
+            $deferredGames->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
+            now()->addMinutes(self::DEFERRED_WISHLIST_GAME_IDS_TTL_MINUTES),
+        );
+
+        foreach ($gamesToCheck as $game) {
+            try {
+                $response = CheapSharkService::rateLimitedCall(
+                    'https://www.cheapshark.com/api/1.0/games',
+                    ['id' => $game->cheapshark_id],
+                    CheapSharkService::PRIORITY_PRICE_CHECK,
+                );
+
+                $gameDataCache[$game->id] = $response->json();
+            } catch (ConnectionException $e) {
+                logger()->warning('Price check skipped because CheapShark request failed.', [
+                    'game_id' => $game->id,
+                    'title' => $game->title,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         foreach ($wishlistsByGame as $gameId => $gameWishlists) {
             $game = $gameWishlists->first()?->game;
 
-            if (!$game || !$game->cheapshark_id) {
+            if (!$game || !isset($gameDataCache[$game->id])) {
                 continue;
-            }
-
-            // Fetch game data only once per game
-            if (!isset($gameDataCache[$game->id])) {
-                try {
-                    $response = CheapSharkService::client()->get(
-                        "https://www.cheapshark.com/api/1.0/games",
-                        ["id" => $game->cheapshark_id]
-                    );
-
-                    $gameDataCache[$game->id] = $response->json();
-                } catch (ConnectionException $e) {
-                    logger()->warning('Price check skipped because CheapShark request failed.', [
-                        'game_id' => $game->id,
-                        'title' => $game->title,
-                        'error' => $e->getMessage(),
-                    ]);
-                    continue;
-                }
             }
 
             $data = $gameDataCache[$game->id];
@@ -113,6 +137,52 @@ class PriceCheckerService
             }
         }
 
+        // After notification checks, refresh non-notification wishlist games lazily at lowest API priority.
+        $this->refreshDeferredWishlistGamePrices();
+
+    }
+
+    private function refreshDeferredWishlistGamePrices(): void
+    {
+        $gameIds = Cache::get(self::DEFERRED_WISHLIST_GAME_IDS_CACHE_KEY, []);
+        if (!is_array($gameIds) || empty($gameIds)) {
+            return;
+        }
+
+        $games = Game::query()
+            ->whereIn('id', $gameIds)
+            ->whereNotNull('cheapshark_id')
+            ->get();
+
+        foreach ($games as $game) {
+            try {
+                $payload = CheapSharkService::rateLimitedCall(
+                    'https://www.cheapshark.com/api/1.0/games',
+                    ['id' => $game->cheapshark_id],
+                    CheapSharkService::PRIORITY_BUILD_CACHE,
+                )->json();
+            } catch (ConnectionException $e) {
+                logger()->warning('Deferred wishlist game price refresh skipped because CheapShark request failed.', [
+                    'game_id' => $game->id,
+                    'title' => $game->title,
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
+
+            $bestDeal = CheapSharkService::selectPreferredDeal($payload['deals'] ?? []);
+            if (!$bestDeal) {
+                continue;
+            }
+
+            $currentPrice = $bestDeal['price'] ?? $bestDeal['salePrice'] ?? null;
+            if ($currentPrice === null) {
+                continue;
+            }
+
+            $game->cheapest_price = (float) $currentPrice;
+            $game->save();
+        }
     }
 
     private function createNotification(

@@ -16,8 +16,8 @@ class GameDiscoveryService
     private const STEAM_GENRE_CACHE_TYPE = 'steam_genres';
     private const RECOMMENDATION_TARGET_SIZE = 500;
     private const GENRE_TARGET_SIZE = 20;
-    private const CHEAPSHARK_PAGE_SIZE = 30;
-    private const CHEAPSHARK_EXTRA_PAGE_BUFFER = 2;
+    private const CHEAPSHARK_PAGE_SIZE = 60;
+    private const CHEAPSHARK_EXTRA_PAGE_BUFFER = 1;
     private const AAA_SOURCE_SIZE = 600;
     private const AAA_TARGET_SIZE = 10;
 
@@ -43,11 +43,12 @@ class GameDiscoveryService
 
         while ($unique->count() < $size && $page < $maxPages) {
             try {
-                $payload = CheapSharkService::client()->get('https://www.cheapshark.com/api/1.0/deals', [
+                $payload = CheapSharkService::rateLimitedCall('https://www.cheapshark.com/api/1.0/deals', [
                     'sortBy' => 'DealRating',
                     'pageSize' => self::CHEAPSHARK_PAGE_SIZE,
                     'pageNumber' => $page,
-                ])->json();
+                ], CheapSharkService::PRIORITY_BUILD_CACHE
+                )->json();
             } catch (ConnectionException $e) {
                 logger()->warning('Game discovery deal refresh stopped because CheapShark could not be reached.', [
                     'page' => $page,

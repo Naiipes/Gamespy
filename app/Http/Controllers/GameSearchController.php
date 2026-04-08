@@ -9,7 +9,7 @@ use App\Models\Game;
 
 class GameSearchController extends Controller
 {
-    private const SEARCH_CACHE_TTL_MINUTES = 5;
+    private const SEARCH_CACHE_TTL_MINUTES = 3;
 
     public function search(Request $request, CheapSharkService $service)
     {
@@ -26,7 +26,7 @@ class GameSearchController extends Controller
         $cacheKey = 'search:' . $normalizedQuery;
 
         $games = Cache::remember($cacheKey, now()->addMinutes(self::SEARCH_CACHE_TTL_MINUTES), function () use ($query, $service) {
-            $results = CheapSharkService::normalizeDealList($service->searchDeals($query));
+            $results = CheapSharkService::normalizeDealList($service->searchDealsAggregated($query));
 
             if (empty($results)) {
                 return [];

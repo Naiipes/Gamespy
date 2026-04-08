@@ -2,11 +2,27 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Client\PendingRequest;
 
 class CheapSharkService
 {
+    private const SEARCH_GAME_LIMIT = 60;
+    private const SEARCH_DEALS_PAGE_SIZE = 60;
+    private const SEARCH_BURST_MAX_POOL_SIZE = 8;
+    private const SEARCH_BURST_WAIT_MICROSECONDS = 1000000;
+    private const SEARCH_BURST_RESULT_WAIT_MICROSECONDS = 50000;
+    private const SEARCH_BURST_RESULT_WAIT_RETRIES = 20;
+    private const SEARCH_API_CACHE_TTL_MINUTES = 3;
+    private const MAX_REQUESTS_PER_SECOND = 3;
+    private const RATE_LIMIT_TTL_SECONDS = 2;
+    private const RATE_LIMIT_WAIT_MICROSECONDS = 100000;
+    public const PRIORITY_SEARCH = 'search';
+    public const PRIORITY_PRICE_CHECK = 'price_check';
+    public const PRIORITY_BUILD_CACHE = 'build_cache';
+
     public const STORES = [
         1 => 'Steam',
         2 => 'GamersGate',
@@ -44,11 +60,6 @@ class CheapSharkService
         34 => 'Noctre',
         35 => 'DreamGame',
     ];
-
-    public function getStoreName(int $storeId): string
-    {
-        return self::resolveStoreName($storeId);
-    }
 
     public static function getAllStores(): array
     {
@@ -106,38 +117,124 @@ class CheapSharkService
         return $request;
     }
 
-    public function search($query)
+    /**
+     * Rate-limited API call with 3-tier priority scheduling.
+     *
+     * ALL CheapShark API access must go through this method.
+     * Enforces a global 3 QPS cap; priority order: search > price_check > build_cache.
+     */
+    public static function rateLimitedCall(string $url, array $query = [], string $priority = self::PRIORITY_BUILD_CACHE): Response
     {
+        self::waitForRateLimitSlot($priority);
 
-        $response = self::client()->get(
-            "https://www.cheapshark.com/api/1.0/games",
-            [
-                "title"=>$query,
-                "limit"=>20
-            ]
-        );
-
-        return $response->json();
-
+        return self::client()->get($url, $query);
     }
 
     public function searchDeals($query)
     {
-        $response = self::client()->get(
+        $response = self::rateLimitedCall(
             "https://www.cheapshark.com/api/1.0/deals",
             [
                 "title" => $query,
-                "pageSize" => 20
-            ]
+                "pageSize" => self::SEARCH_DEALS_PAGE_SIZE
+            ],
+            self::PRIORITY_SEARCH,
         );
 
         return $response->json();
+    }
+
+    public function searchDealsAggregated(string $query): array
+    {
+        $normalized = mb_strtolower(preg_replace('/\s+/', ' ', trim($query)));
+        $queryHash = md5($normalized);
+        $resultKey = self::searchBurstResultKey($queryHash);
+        $apiCacheKey = self::searchApiCacheKey($normalized);
+
+        $cachedApiPayload = Cache::get($apiCacheKey);
+        if (is_array($cachedApiPayload)) {
+            return $cachedApiPayload;
+        }
+
+        $cachedResult = Cache::get($resultKey);
+        if (is_array($cachedResult)) {
+            return $cachedResult;
+        }
+
+        $window = now()->format('YmdHis');
+        $batchKey = self::searchBurstBatchKey($window);
+        $dispatchKey = self::searchBurstDispatchKey($window);
+        $shouldBypassBatch = false;
+
+        $lock = Cache::lock('cheapshark:search-burst-lock:' . $window, 2);
+        $lock->block(1, function () use ($batchKey, $normalized, $query, $resultKey, &$shouldBypassBatch) {
+            $apiCached = Cache::get(self::searchApiCacheKey($normalized));
+            if (is_array($apiCached)) {
+                Cache::put($resultKey, $apiCached, now()->addSeconds(15));
+                return;
+            }
+
+            $batch = Cache::get($batchKey, []);
+            if (!is_array($batch)) {
+                $batch = [];
+            }
+
+            if (!array_key_exists($normalized, $batch) && count($batch) >= self::SEARCH_BURST_MAX_POOL_SIZE) {
+                $shouldBypassBatch = true;
+                return;
+            }
+
+            $batch[$normalized] = $query;
+            Cache::put($batchKey, $batch, now()->addSeconds(3));
+        });
+
+        if ($shouldBypassBatch) {
+            // Keep search latency stable under burst pressure by bypassing the batch once the pool is full.
+            $payload = $this->searchDeals($query);
+            Cache::put($apiCacheKey, $payload, now()->addMinutes(self::SEARCH_API_CACHE_TTL_MINUTES));
+            Cache::put($resultKey, $payload, now()->addSeconds(15));
+
+            return $payload;
+        }
+
+        if (Cache::add($dispatchKey, 1, now()->addSeconds(2))) {
+            usleep(self::SEARCH_BURST_WAIT_MICROSECONDS);
+
+            $queries = Cache::get($batchKey, []);
+            if (is_array($queries)) {
+                foreach ($queries as $queuedNormalized => $queuedQuery) {
+                    $queuedApiCacheKey = self::searchApiCacheKey((string) $queuedNormalized);
+                    $cachedPayload = Cache::get($queuedApiCacheKey);
+
+                    if (is_array($cachedPayload)) {
+                        Cache::put(self::searchBurstResultKey(md5((string) $queuedNormalized)), $cachedPayload, now()->addSeconds(15));
+                        continue;
+                    }
+
+                    $payload = $this->searchDeals((string) $queuedQuery);
+                    Cache::put($queuedApiCacheKey, $payload, now()->addMinutes(self::SEARCH_API_CACHE_TTL_MINUTES));
+                    Cache::put(self::searchBurstResultKey(md5((string) $queuedNormalized)), $payload, now()->addSeconds(15));
+                }
+            }
+        }
+
+        for ($i = 0; $i < self::SEARCH_BURST_RESULT_WAIT_RETRIES; $i++) {
+            $payload = Cache::get($resultKey);
+            if (is_array($payload)) {
+                return $payload;
+            }
+
+            usleep(self::SEARCH_BURST_RESULT_WAIT_MICROSECONDS);
+        }
+
+        // Fallback if batch dispatcher failed for any reason.
+        return $this->searchDeals($query);
     }
 
     public function deals($gameId)
     {
 
-        $response = self::client()->get(
+        $response = self::rateLimitedCall(
             "https://www.cheapshark.com/api/1.0/games",
             [
                 "id"=>$gameId
@@ -204,5 +301,111 @@ class CheapSharkService
         }
 
         return (int) $storeId;
+    }
+
+    private static function waitForRateLimitSlot(string $priority): void
+    {
+        self::incrementWaiters($priority);
+
+        try {
+            while (true) {
+                $second = now()->format('YmdHis');
+                $lock = Cache::lock('cheapshark:rate-lock:' . $second, 1);
+
+                if (!$lock->get()) {
+                    usleep(self::RATE_LIMIT_WAIT_MICROSECONDS);
+                    continue;
+                }
+
+                try {
+                    $totalKey = 'cheapshark:rate:total:' . $second;
+
+                    $total = (int) Cache::get($totalKey, 0);
+                    $searchWaiters = self::waiters(self::PRIORITY_SEARCH);
+                    $priceWaiters = self::waiters(self::PRIORITY_PRICE_CHECK);
+                    $buildWaiters = self::waiters(self::PRIORITY_BUILD_CACHE);
+
+                    $canProceed = false;
+
+                    if ($priority === self::PRIORITY_SEARCH) {
+                        $canProceed = $total < self::MAX_REQUESTS_PER_SECOND;
+                    } elseif ($priority === self::PRIORITY_PRICE_CHECK) {
+                        $canProceed = $total < self::MAX_REQUESTS_PER_SECOND
+                            && $searchWaiters === 0;
+                    } else {
+                        $canProceed = $total < self::MAX_REQUESTS_PER_SECOND
+                            && $searchWaiters === 0
+                            && $priceWaiters === 0;
+                    }
+
+                    if ($canProceed) {
+                        Cache::put($totalKey, $total + 1, now()->addSeconds(self::RATE_LIMIT_TTL_SECONDS));
+
+                        return;
+                    }
+                } finally {
+                    $lock->release();
+                }
+
+                usleep(self::RATE_LIMIT_WAIT_MICROSECONDS);
+            }
+        } finally {
+            self::decrementWaiters($priority);
+        }
+    }
+
+    private static function incrementWaiters(string $priority): void
+    {
+        $key = self::waiterKey($priority);
+
+        Cache::add($key, 0, now()->addSeconds(self::RATE_LIMIT_TTL_SECONDS));
+        Cache::increment($key);
+    }
+
+    private static function decrementWaiters(string $priority): void
+    {
+        $key = self::waiterKey($priority);
+        $lock = Cache::lock($key . ':lock', 1);
+
+        if (!$lock->get()) {
+            return;
+        }
+
+        try {
+            $current = (int) Cache::get($key, 0);
+            Cache::put($key, max(0, $current - 1), now()->addSeconds(self::RATE_LIMIT_TTL_SECONDS));
+        } finally {
+            $lock->release();
+        }
+    }
+
+    private static function waiters(string $priority): int
+    {
+        return (int) Cache::get(self::waiterKey($priority), 0);
+    }
+
+    private static function waiterKey(string $priority): string
+    {
+        return 'cheapshark:waiters:' . $priority;
+    }
+
+    private static function searchBurstBatchKey(string $window): string
+    {
+        return 'cheapshark:search-burst:batch:' . $window;
+    }
+
+    private static function searchBurstDispatchKey(string $window): string
+    {
+        return 'cheapshark:search-burst:dispatch:' . $window;
+    }
+
+    private static function searchBurstResultKey(string $hash): string
+    {
+        return 'cheapshark:search-burst:result:' . $hash;
+    }
+
+    private static function searchApiCacheKey(string $normalized): string
+    {
+        return 'cheapshark:search-api:' . md5($normalized);
     }
 }
