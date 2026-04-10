@@ -11,17 +11,16 @@ class CheapSharkService
 {
     private const SEARCH_GAME_LIMIT = 60;
     private const SEARCH_DEALS_PAGE_SIZE = 60;
-    private const SEARCH_BURST_MAX_POOL_SIZE = 8;
     private const SEARCH_BURST_WAIT_MICROSECONDS = 1000000;
-    private const SEARCH_BURST_RESULT_WAIT_MICROSECONDS = 50000;
-    private const SEARCH_BURST_RESULT_WAIT_RETRIES = 20;
-    private const SEARCH_API_CACHE_TTL_MINUTES = 3;
+    private const SEARCH_BURST_RESULT_WAIT_MICROSECONDS = 100000;
+    private const SEARCH_BURST_RESULT_WAIT_RETRIES = 40;
     private const MAX_REQUESTS_PER_SECOND = 3;
     private const RATE_LIMIT_TTL_SECONDS = 2;
     private const RATE_LIMIT_WAIT_MICROSECONDS = 100000;
+    private const PRIORITY_NORMAL = 'normal';
     public const PRIORITY_SEARCH = 'search';
-    public const PRIORITY_PRICE_CHECK = 'price_check';
-    public const PRIORITY_BUILD_CACHE = 'build_cache';
+    public const PRIORITY_PRICE_CHECK = 'normal';
+    public const PRIORITY_BUILD_CACHE = 'normal';
 
     public const STORES = [
         1 => 'Steam',
@@ -61,11 +60,19 @@ class CheapSharkService
         35 => 'DreamGame',
     ];
 
+    // Converts a store ID into a human-readable store name.
+    public function getStoreName(int $storeId): string
+    {
+        return self::resolveStoreName($storeId);
+    }
+
+    // Returns the full static map of CheapShark store IDs.
     public static function getAllStores(): array
     {
         return self::STORES;
     }
 
+    // Resolves nullable/mixed store IDs and returns a safe display label.
     public static function resolveStoreName($storeId): string
     {
         $storeId = self::normalizeStoreId($storeId);
@@ -77,6 +84,7 @@ class CheapSharkService
         return self::STORES[$storeId] ?? "Store #{$storeId}";
     }
 
+    // Chooses one best deal from a list by price/savings/store/deal ordering.
     public static function selectPreferredDeal(array $deals): ?array
     {
         return collect(self::normalizeDealList($deals))
@@ -85,6 +93,7 @@ class CheapSharkService
             ->first();
     }
 
+            // Accepts an API payload and keeps only list-style array deal entries.
     public static function normalizeDealList($payload): array
     {
         if (!is_array($payload) || !array_is_list($payload)) {
@@ -94,6 +103,17 @@ class CheapSharkService
         return array_values(array_filter($payload, fn ($deal) => is_array($deal)));
     }
 
+    // Canonicalizes search text for cache keys and upstream query consistency.
+    public static function normalizeSearchQuery(string $query): string
+    {
+        // Normalize user input so cache keys and upstream queries stay consistent.
+        $normalized = mb_strtolower(trim($query));
+        $normalized = preg_replace('/[^\p{L}\p{N}]+/u', '', $normalized);
+
+        return is_string($normalized) ? $normalized : '';
+    }
+
+    // Reads a standard API error string from a response payload.
     public static function extractApiError($payload): ?string
     {
         if (!is_array($payload)) {
@@ -105,6 +125,7 @@ class CheapSharkService
         return is_string($error) && $error !== '' ? $error : null;
     }
 
+    // Builds the shared HTTP client used for CheapShark calls.
     public static function client(): PendingRequest
     {
         $request = Http::timeout(15);
@@ -117,22 +138,42 @@ class CheapSharkService
         return $request;
     }
 
-    /**
-     * Rate-limited API call with 3-tier priority scheduling.
-     *
-     * ALL CheapShark API access must go through this method.
-     * Enforces a global 3 QPS cap; priority order: search > price_check > build_cache.
-     */
-    public static function rateLimitedCall(string $url, array $query = [], string $priority = self::PRIORITY_BUILD_CACHE): Response
+    // Performs a GET request with rate-limit coordination and returns the raw response.
+    public static function throttledGet(string $url, array $query = [], string $priority = self::PRIORITY_NORMAL): Response
     {
         self::waitForRateLimitSlot($priority);
 
         return self::client()->get($url, $query);
     }
 
+    /**
+     * Backward-compatible alias used by other services.
+     */
+    public static function rateLimitedCall(string $url, array $query = [], string $priority = self::PRIORITY_NORMAL): Response
+    {
+        return self::throttledGet($url, $query, $priority);
+    }
+
+    // Sends title-search to CheapShark /games and returns decoded JSON.
+    public function search($query)
+    {
+        $response = self::throttledGet(
+            "https://www.cheapshark.com/api/1.0/games",
+            [
+                "title"=>$query,
+                "limit"=>self::SEARCH_GAME_LIMIT
+            ],
+            self::PRIORITY_SEARCH,
+        );
+
+        return $response->json();
+
+    }
+
+    // Sends deal-search to CheapShark /deals and returns decoded JSON.
     public function searchDeals($query)
     {
-        $response = self::rateLimitedCall(
+        $response = self::throttledGet(
             "https://www.cheapshark.com/api/1.0/deals",
             [
                 "title" => $query,
@@ -144,18 +185,14 @@ class CheapSharkService
         return $response->json();
     }
 
+    // Batches same-second normalized deal searches and shares one short-lived result per query.
     public function searchDealsAggregated(string $query): array
     {
-        $normalized = mb_strtolower(preg_replace('/\s+/', ' ', trim($query)));
+        $normalized = $query;
         $queryHash = md5($normalized);
         $resultKey = self::searchBurstResultKey($queryHash);
-        $apiCacheKey = self::searchApiCacheKey($normalized);
 
-        $cachedApiPayload = Cache::get($apiCacheKey);
-        if (is_array($cachedApiPayload)) {
-            return $cachedApiPayload;
-        }
-
+        // Fast path: reuse a recent burst result if available.
         $cachedResult = Cache::get($resultKey);
         if (is_array($cachedResult)) {
             return $cachedResult;
@@ -164,56 +201,37 @@ class CheapSharkService
         $window = now()->format('YmdHis');
         $batchKey = self::searchBurstBatchKey($window);
         $dispatchKey = self::searchBurstDispatchKey($window);
-        $shouldBypassBatch = false;
 
+        // Enqueue into the FIFO list for this second window, skipping duplicates.
         $lock = Cache::lock('cheapshark:search-burst-lock:' . $window, 2);
-        $lock->block(1, function () use ($batchKey, $normalized, $query, $resultKey, &$shouldBypassBatch) {
-            $apiCached = Cache::get(self::searchApiCacheKey($normalized));
-            if (is_array($apiCached)) {
-                Cache::put($resultKey, $apiCached, now()->addSeconds(15));
-                return;
+        $lock->block(1, function () use ($batchKey, $normalized) {
+            $queue = Cache::get($batchKey, []);
+            if (!is_array($queue)) {
+                $queue = [];
             }
 
-            $batch = Cache::get($batchKey, []);
-            if (!is_array($batch)) {
-                $batch = [];
+            // Deduplicate the same normalized query within the same second-window queue.
+            $alreadyQueued = collect($queue)->contains('normalized', $normalized);
+            if (!$alreadyQueued) {
+                $queue[] = ['normalized' => $normalized];
+                Cache::put($batchKey, $queue, now()->addSeconds(3));
             }
-
-            if (!array_key_exists($normalized, $batch) && count($batch) >= self::SEARCH_BURST_MAX_POOL_SIZE) {
-                $shouldBypassBatch = true;
-                return;
-            }
-
-            $batch[$normalized] = $query;
-            Cache::put($batchKey, $batch, now()->addSeconds(3));
         });
 
-        if ($shouldBypassBatch) {
-            // Keep search latency stable under burst pressure by bypassing the batch once the pool is full.
-            $payload = $this->searchDeals($query);
-            Cache::put($apiCacheKey, $payload, now()->addMinutes(self::SEARCH_API_CACHE_TTL_MINUTES));
-            Cache::put($resultKey, $payload, now()->addSeconds(15));
-
-            return $payload;
-        }
-
+        // First request to win the dispatch lock processes the whole FIFO queue in order.
         if (Cache::add($dispatchKey, 1, now()->addSeconds(2))) {
             usleep(self::SEARCH_BURST_WAIT_MICROSECONDS);
 
-            $queries = Cache::get($batchKey, []);
-            if (is_array($queries)) {
-                foreach ($queries as $queuedNormalized => $queuedQuery) {
-                    $queuedApiCacheKey = self::searchApiCacheKey((string) $queuedNormalized);
-                    $cachedPayload = Cache::get($queuedApiCacheKey);
-
-                    if (is_array($cachedPayload)) {
-                        Cache::put(self::searchBurstResultKey(md5((string) $queuedNormalized)), $cachedPayload, now()->addSeconds(15));
-                        continue;
-                    }
-
-                    $payload = $this->searchDeals((string) $queuedQuery);
-                    Cache::put($queuedApiCacheKey, $payload, now()->addMinutes(self::SEARCH_API_CACHE_TTL_MINUTES));
-                    Cache::put(self::searchBurstResultKey(md5((string) $queuedNormalized)), $payload, now()->addSeconds(15));
+            $queue = Cache::get($batchKey, []);
+            if (is_array($queue)) {
+                // Process in FIFO order so earlier arrivals are served first.
+                foreach ($queue as $item) {
+                    $payload = $this->searchDeals((string) $item['normalized']);
+                    Cache::put(
+                        self::searchBurstResultKey(md5((string) $item['normalized'])),
+                        $payload,
+                        now()->addSeconds(15),
+                    );
                 }
             }
         }
@@ -227,14 +245,18 @@ class CheapSharkService
             usleep(self::SEARCH_BURST_RESULT_WAIT_MICROSECONDS);
         }
 
-        // Fallback if batch dispatcher failed for any reason.
-        return $this->searchDeals($query);
+        return [
+            // Caller can retry shortly; no direct fallback API call here by design.
+            'error' => 'search_burst_timeout',
+            'retryAfterSeconds' => 1,
+        ];
     }
 
+    // Fetches one game detail payload from CheapShark /games?id=...
     public function deals($gameId)
     {
 
-        $response = self::rateLimitedCall(
+        $response = self::throttledGet(
             "https://www.cheapshark.com/api/1.0/games",
             [
                 "id"=>$gameId
@@ -244,6 +266,7 @@ class CheapSharkService
         return $response->json();
     }
 
+    // Comparator used to rank deals: lowest price, highest savings, lowest store ID, then deal ID.
     private static function compareDeals(array $left, array $right): int
     {
         $priceComparison = self::dealPrice($left) <=> self::dealPrice($right);
@@ -268,6 +291,7 @@ class CheapSharkService
         return strcmp((string) ($left['dealID'] ?? ''), (string) ($right['dealID'] ?? ''));
     }
 
+    // Extracts numeric price with field fallbacks for mixed CheapShark payloads.
     private static function dealPrice(array $deal): float
     {
         return (float) (
@@ -278,6 +302,7 @@ class CheapSharkService
         );
     }
 
+    // Computes savings percent from payload or derives it from retail/current price.
     private static function dealSavings(array $deal): float
     {
         if (isset($deal['savings'])) {
@@ -294,6 +319,7 @@ class CheapSharkService
         return (1 - ($price / $retail)) * 100;
     }
 
+    // Normalizes optional store IDs and supports a default sentinel.
     private static function normalizeStoreId($storeId, ?int $default = null): ?int
     {
         if ($storeId === null || $storeId === '') {
@@ -303,9 +329,14 @@ class CheapSharkService
         return (int) $storeId;
     }
 
+    // Coordinates per-second request slots across priorities using cache-based counters/locks.
     private static function waitForRateLimitSlot(string $priority): void
     {
-        self::incrementWaiters($priority);
+        $isSearch = $priority === self::PRIORITY_SEARCH;
+
+        if ($isSearch) {
+            self::incrementSearchWaiters();
+        }
 
         try {
             while (true) {
@@ -319,27 +350,31 @@ class CheapSharkService
 
                 try {
                     $totalKey = 'cheapshark:rate:total:' . $second;
+                    $normalKey = 'cheapshark:rate:normal:' . $second;
 
                     $total = (int) Cache::get($totalKey, 0);
-                    $searchWaiters = self::waiters(self::PRIORITY_SEARCH);
-                    $priceWaiters = self::waiters(self::PRIORITY_PRICE_CHECK);
-                    $buildWaiters = self::waiters(self::PRIORITY_BUILD_CACHE);
+                    $normal = (int) Cache::get($normalKey, 0);
+                    $searchWaiters = (int) Cache::get('cheapshark:search-waiters', 0);
+
+                    // Reserve up to two slots for active search traffic to keep UI responsive.
+                    $reserved = min($searchWaiters, self::MAX_REQUESTS_PER_SECOND - 1);
+                    $normalLimit = self::MAX_REQUESTS_PER_SECOND - $reserved;
 
                     $canProceed = false;
 
-                    if ($priority === self::PRIORITY_SEARCH) {
+                    if ($isSearch) {
                         $canProceed = $total < self::MAX_REQUESTS_PER_SECOND;
-                    } elseif ($priority === self::PRIORITY_PRICE_CHECK) {
-                        $canProceed = $total < self::MAX_REQUESTS_PER_SECOND
-                            && $searchWaiters === 0;
                     } else {
                         $canProceed = $total < self::MAX_REQUESTS_PER_SECOND
-                            && $searchWaiters === 0
-                            && $priceWaiters === 0;
+                            && $normal < $normalLimit;
                     }
 
                     if ($canProceed) {
                         Cache::put($totalKey, $total + 1, now()->addSeconds(self::RATE_LIMIT_TTL_SECONDS));
+
+                        if (!$isSearch) {
+                            Cache::put($normalKey, $normal + 1, now()->addSeconds(self::RATE_LIMIT_TTL_SECONDS));
+                        }
 
                         return;
                     }
@@ -350,62 +385,51 @@ class CheapSharkService
                 usleep(self::RATE_LIMIT_WAIT_MICROSECONDS);
             }
         } finally {
-            self::decrementWaiters($priority);
+            if ($isSearch) {
+                self::decrementSearchWaiters();
+            }
         }
     }
 
-    private static function incrementWaiters(string $priority): void
+    // Tracks active search waiters so search traffic can reserve request slots.
+    private static function incrementSearchWaiters(): void
     {
-        $key = self::waiterKey($priority);
-
-        Cache::add($key, 0, now()->addSeconds(self::RATE_LIMIT_TTL_SECONDS));
-        Cache::increment($key);
+        Cache::add('cheapshark:search-waiters', 0, now()->addSeconds(self::RATE_LIMIT_TTL_SECONDS));
+        Cache::increment('cheapshark:search-waiters');
     }
 
-    private static function decrementWaiters(string $priority): void
+    // Decrements search waiter count safely under a short cache lock.
+    private static function decrementSearchWaiters(): void
     {
-        $key = self::waiterKey($priority);
-        $lock = Cache::lock($key . ':lock', 1);
+        $lock = Cache::lock('cheapshark:search-waiters-lock', 1);
 
         if (!$lock->get()) {
             return;
         }
 
         try {
-            $current = (int) Cache::get($key, 0);
-            Cache::put($key, max(0, $current - 1), now()->addSeconds(self::RATE_LIMIT_TTL_SECONDS));
+            $current = (int) Cache::get('cheapshark:search-waiters', 0);
+            Cache::put('cheapshark:search-waiters', max(0, $current - 1), now()->addSeconds(self::RATE_LIMIT_TTL_SECONDS));
         } finally {
             $lock->release();
         }
     }
 
-    private static function waiters(string $priority): int
-    {
-        return (int) Cache::get(self::waiterKey($priority), 0);
-    }
-
-    private static function waiterKey(string $priority): string
-    {
-        return 'cheapshark:waiters:' . $priority;
-    }
-
+    // Builds cache key for one-second burst queue storage.
     private static function searchBurstBatchKey(string $window): string
     {
         return 'cheapshark:search-burst:batch:' . $window;
     }
 
+    // Builds cache key for one-second burst dispatcher election.
     private static function searchBurstDispatchKey(string $window): string
     {
         return 'cheapshark:search-burst:dispatch:' . $window;
     }
 
+    // Builds cache key for short-lived per-query burst results.
     private static function searchBurstResultKey(string $hash): string
     {
         return 'cheapshark:search-burst:result:' . $hash;
-    }
-
-    private static function searchApiCacheKey(string $normalized): string
-    {
-        return 'cheapshark:search-api:' . md5($normalized);
     }
 }

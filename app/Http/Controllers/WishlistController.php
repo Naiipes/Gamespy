@@ -8,12 +8,14 @@ use App\Services\CheapSharkService;
 
 class WishlistController extends Controller
 {
+    // Validates incoming wishlist request, upserts missing game metadata, and creates one wishlist row.
     public function store(Request $request)
     {
         if (!auth()->check()) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
 
+        // Allow adding from search cards that only send CheapShark metadata.
         if (!$request->has('game_id') && $request->has('cheapshark_id')) {
             $game = \App\Models\Game::updateOrCreate(
                 ['cheapshark_id' => $request->cheapshark_id],
@@ -59,6 +61,7 @@ class WishlistController extends Controller
 
     public function index(CheapSharkService $service)
     {
+        // Returns authenticated user's wishlist with live-enriched deal snapshots and unread notification map.
         if (!auth()->check()) {
             if (request()->wantsJson()) {
                 return response()->json([]);
@@ -91,6 +94,7 @@ class WishlistController extends Controller
                 return;
             }
 
+            // Refresh deal snapshot per listed game for up-to-date wishlist pricing.
             $dealData = $service->deals($game->cheapshark_id);
             $bestDeal = CheapSharkService::selectPreferredDeal($dealData['deals'] ?? []);
 
@@ -117,10 +121,12 @@ class WishlistController extends Controller
 
     public function gameIds()
     {
+        // Returns compact wishlist game identifiers for client-side state sync.
         if (!auth()->check()) {
             return response()->json([]);
         }
 
+        // Lightweight payload used by frontend heart-state synchronization.
         $ids = auth()->user()->wishlists()
             ->with('game:id,cheapshark_id')
             ->get()
@@ -134,6 +140,7 @@ class WishlistController extends Controller
 
     public function deleteGame(Request $request, $game_id)
     {
+        // Deletes one wishlist entry for the authenticated user by game ID.
         $wishlist = Wishlist::where("user_id", auth()->id())
                             ->where("game_id", $game_id)
                             ->first();
@@ -153,6 +160,7 @@ class WishlistController extends Controller
 
     public function updateTargetPrice(Request $request, $game_id)
     {
+        // Updates notification preferences/target price flags for one wishlist game.
         if (!auth()->check()) {
             return response()->json(['message' => 'Unauthenticated'], 401);
         }

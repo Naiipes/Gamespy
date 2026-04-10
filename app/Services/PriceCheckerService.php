@@ -16,8 +16,12 @@ class PriceCheckerService
     private const DEFERRED_WISHLIST_GAME_IDS_CACHE_KEY = 'prices:check:deferred-wishlist-game-ids';
     private const DEFERRED_WISHLIST_GAME_IDS_TTL_MINUTES = 40;
 
+    // Fetches current deals per game, updates wishlist state flags, and creates notifications when rules match.
     public function checkPrices()
     {
+        // Force-delete stale notification rows older than 2 weeks.
+        Notification::where('created_at', '<=', now()->subWeeks(2))->delete();
+
         $wishlists = Wishlist::with(["game","user"])->get();
 
         // Group by game_id to avoid duplicate API calls for the same game
@@ -39,6 +43,7 @@ class PriceCheckerService
             ->keyBy(fn ($game) => $game->id)
             ->values();
 
+        // Keep deferred game IDs so low-priority refresh can run after notification-critical work.
         Cache::put(
             self::DEFERRED_WISHLIST_GAME_IDS_CACHE_KEY,
             $deferredGames->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
@@ -111,6 +116,7 @@ class PriceCheckerService
                 $this->syncUnreadNotificationStore($wishlist, $storeName);
 
                 if (!$wishlist->notifications_enabled) {
+                    // Track sale state even when notifications are disabled, so reenabling is consistent.
                     $wishlist->was_on_sale_last_check = $isOnSale;
                     $wishlist->target_notification_sent = false;
                     $wishlist->save();
@@ -142,8 +148,10 @@ class PriceCheckerService
 
     }
 
+    // Refreshes cheapest_price for non-notification wishlist games with low-priority upstream requests.
     private function refreshDeferredWishlistGamePrices(): void
     {
+        // Non-notification wishlists are refreshed lazily with lowest request priority.
         $gameIds = Cache::get(self::DEFERRED_WISHLIST_GAME_IDS_CACHE_KEY, []);
         if (!is_array($gameIds) || empty($gameIds)) {
             return;
@@ -185,6 +193,7 @@ class PriceCheckerService
         }
     }
 
+    // Persists one notification row and optionally sends notification email.
     private function createNotification(
         Wishlist $wishlist,
         float $currentPrice,
@@ -228,6 +237,7 @@ class PriceCheckerService
         }
     }
 
+    // Keeps unread notifications aligned with latest preferred store for the same user/game.
     private function syncUnreadNotificationStore(Wishlist $wishlist, string $storeName): void
     {
         $gameId = $wishlist->game?->id;

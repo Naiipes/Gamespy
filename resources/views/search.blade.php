@@ -3,6 +3,9 @@
 @section('content')
     <div class="results-wrapper">
         <h1>Search results for "{{ request('q') }}"</h1>
+        @if (!empty($searchBanMessage))
+            <p>{{ $searchBanMessage }} (retry in {{ $retryAfter ?? 1 }}s)</p>
+        @endif
         <div id="results">
             @foreach ($games as $game)
                 @php
