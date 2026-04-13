@@ -141,6 +141,14 @@ class CheapSharkService
     // Performs a GET request with rate-limit coordination and returns the raw response.
     public static function throttledGet(string $url, array $query = [], string $priority = self::PRIORITY_NORMAL): Response
     {
+
+        // Store the API call count in the cache and display it in the terminal (starting from 1 if uninitialized)
+        $count = Cache::get('cheapshark:api-call-count', 0);
+        $count++;
+        Cache::put('cheapshark:api-call-count', $count, now()->addDays(7));
+        // display the count in the terminal for monitoring purposes
+        echo "★ CheapShark API invoked: {$count} times\n";
+
         self::waitForRateLimitSlot($priority);
 
         return self::client()->get($url, $query);
